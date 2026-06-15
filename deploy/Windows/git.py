@@ -52,7 +52,7 @@ class GitManager(DeployConfig):
         return conf
 
     def git_repository_init(
-            self, repo, source='origin', branch='master', proxy='', ssl_verify=True
+            self, repo, source='origin', branch='main', proxy='', ssl_verify=True
     ):
         logger.hr('Git Init', 1)
         if not self.execute(f'"{self.git}" init', allow_failure=True):
@@ -90,7 +90,11 @@ class GitManager(DeployConfig):
         Progress.GitSetRepo()
 
         logger.hr('Fetch Repository Branch', 1)
-        self.execute(f'"{self.git}" fetch {source} {branch}')
+        # 显式抓取到 origin/<branch>，避免官方壳包内遗留的 master refspec 让
+        # origin/main 不存在，进而在 reset --hard origin/main 时直接失败。
+        self.execute(
+            f'"{self.git}" fetch {source} {branch}:refs/remotes/{source}/{branch}'
+        )
         Progress.GitFetch()
 
         logger.hr('Pull Repository Branch', 1)
@@ -98,7 +102,7 @@ class GitManager(DeployConfig):
         for lock_file in [
             './.git/index.lock',
             './.git/HEAD.lock',
-            './.git/refs/heads/master.lock',
+            f'./.git/refs/heads/{branch}.lock',
         ]:
             if os.path.exists(lock_file):
                 logger.info(f'Lock file {lock_file} exists, removing')
