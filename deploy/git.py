@@ -45,6 +45,12 @@ class GitManager(DeployConfig):
         else:
             self.execute(f'"{self.git}" config --local http.sslVerify false', allow_failure=True)
 
+        # 公开仓库更新不需要凭据选择器。
+        # 发布包自带的 Git for Windows 默认启用了 helper-selector，
+        # 朋友首次运行时会弹出 CredentialHelperSelector，影响无账号场景的自动更新。
+        # 这里在仓库级明确清空 credential.helper，避免更新流程被额外交互打断。
+        self.execute(f'"{self.git}" config --local credential.helper ""', allow_failure=True)
+
         logger.hr('Set Git Repository', 1)
         if not self.execute(f'"{self.git}" remote set-url {source} {repo}', allow_failure=True):
             self.execute(f'"{self.git}" remote add {source} {repo}')

@@ -163,6 +163,21 @@ function New-DeployConfig {
     Set-Content -Path $DestinationPath -Value $content -Encoding UTF8
 }
 
+function Disable-GitCredentialSelector {
+    param([string]$PackageRoot)
+
+    $gitConfigPath = Join-Path $PackageRoot "toolkit\Git\etc\gitconfig"
+    if (-not (Test-Path $gitConfigPath)) {
+        return
+    }
+
+    # 发布包面向公开仓库更新场景，不需要 Git for Windows 的凭据选择器弹窗。
+    # 这里直接把 helper-selector 改成空 helper，避免朋友首次启动时被额外交互打断。
+    $content = Get-Content -Path $gitConfigPath -Raw
+    $content = [regex]::Replace($content, '(?m)^(\s*helper\s*=\s*)helper-selector\s*$', '${1}')
+    Set-Content -Path $gitConfigPath -Value $content -Encoding ASCII
+}
+
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 if (-not $OutputDir) {
     $OutputDir = Join-Path $repoRoot "dist"
@@ -219,6 +234,7 @@ try {
 
     Write-Section "Copying official-style release shell"
     Copy-ReleaseShell -BootstrapRoot $BootstrapDir -PackageRoot $packageRoot
+    Disable-GitCredentialSelector -PackageRoot $packageRoot
 
     Write-Section "Overlaying MyGG deploy layer"
     Sync-Directory -SourcePath (Join-Path $repoRoot "deploy") -DestinationPath (Join-Path $packageRoot "deploy")
