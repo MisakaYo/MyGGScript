@@ -892,8 +892,11 @@ class AlasGUI(Frame):
                 )
             with use_scope("updater_detail", clear=True):
                 put_text(t("Gui.Update.DetailedHistory"))
+                # 详细历史这里只展示最近少量提交。
+                # 这样既能保留更新参考价值，也能避免把更早的历史作者信息继续暴露在更新器里。
+                # 副作用是用户一次能看到的提交更少，但对日常更新判断已经足够。
                 history = updater.get_commit(
-                    f"origin/{updater.Branch}", n=20, short_sha1=True
+                    f"origin/{updater.Branch}", n=5, short_sha1=True
                 )
                 put_table(
                     [commit for commit in history],
