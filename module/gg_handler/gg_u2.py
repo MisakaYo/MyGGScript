@@ -193,7 +193,11 @@ class GGU2(Base):
         set_done = False
         confirmed = False
         confirmed_at = 0.0
-        confirm_grace_period = 15.0
+        # 这里故意把保底等待时间拉长。
+        # 原因是部分设备在 GG 第二段执行动画结束前，确认按钮就已经消失，
+        # Alas 如果过早关闭 GG，会让 Lua 被中断，最终仍按原战力出击。
+        # 副作用是启用 GG 时会额外多等几十秒，但比“偶发修改失败”更可接受。
+        confirm_grace_period = 45.0
         settle_started = False
         while True:
             self.device.sleep(1)
@@ -242,10 +246,13 @@ class GGU2(Base):
                 # 这里改成“确认后固定保底等待”而不只依赖界面消失，
                 # 因为日志已经证明 Lua 在按钮收起后仍会继续跑一段时间，过早关闭 GG 会直接中断修改。
                 # 副作用是每次启用 GG 会额外慢十几秒，但能显著降低倍率尚未写完就被 Alas 抢回前台的问题。
+                # 这里不用“按钮消失就立即结束”，而是追加一段保底等待。
+                # 这样即使朋友设备上的第二条进度条更慢，也能给 Lua 足够时间落地。
                 if time() - confirmed_at < confirm_grace_period:
                     continue
 
                 GGData(self.config).set_data(target='gg_on', value=True)
+                logger.info(f'GG Lua settle finished after {confirm_grace_period:.0f}s grace period')
                 logger.attr('GG', 'Enabled')
                 logger.hr('GG Enabled', level=2)
                 self.d.app_stop(self.gg_package_name)
