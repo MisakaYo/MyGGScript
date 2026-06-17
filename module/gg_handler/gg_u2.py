@@ -54,8 +54,9 @@ class GGU2(Base):
         Raises:
             Exception: UI 查询或关闭应用失败时继续向上抛出。
         """
+        gg_restart_text = '\u91cd\u542f\u6e38\u620f'
         skipped = False
-        if self.d.xpath('//*[@text="閲嶅惎娓告垙"]').exists:
+        if self.d.xpath(f'//*[@text="{gg_restart_text}"]').exists:
             skipped = True
             logger.hr('Game died with GG panel')
         logger.info('Kill GG panel if it is still alive')
@@ -227,12 +228,16 @@ class GGU2(Base):
         """
         app_names = {
             'en': 'Azur Lane',
-            'cn': '纰ц摑鑸嚎',
-            'jp': '銈偤銉笺儷銉兗銉?',
-            'tw': '纰ц棈鑸窔',
+            'cn': '\u78a7\u84dd\u822a\u7ebf',
+            'jp': '\u30a2\u30ba\u30fc\u30eb\u30ec\u30fc\u30f3',
+            'tw': '\u78a7\u85cd\u822a\u7dda',
         }
-        # 这里保留现有 GG 操作顺序，只给关键界面切换补等待与重试。
-        # 这样不改变现有配置语义，但能减少“刚点箭头就开始读树”带来的偶发卡死。
+        gg_ignore_text = '\u5ffd\u7565'
+        gg_cancel_text = '\u53d6\u6d88'
+        gg_confirm_text = '\u786e\u5b9a'
+        gg_restart_text = '\u91cd\u542f\u6e38\u620f'
+        # 这里把 GG 依赖的中文文案统一改成 Unicode 转义常量。
+        # 原因是上一次源码已被错误编码污染，继续直接写中文文本会让“看起来像日志乱码”的问题变成真实匹配失败。
         try:
             self.factor = factor
             ggdata = GGData(self.config).get_data()
@@ -259,8 +264,8 @@ class GGU2(Base):
             logger.info(f'GG target app name: {app_name}')
             while True:
                 self.device.sleep(self.gg_poll_interval)
-                if self.d.xpath('//*[@text="蹇界暐"]').exists:
-                    self.d.xpath('//*[@text="蹇界暐"]').click()
+                if self.d.xpath(f'//*[@text="{gg_ignore_text}"]').exists:
+                    self.d.xpath(f'//*[@text="{gg_ignore_text}"]').click()
                     logger.info('Click ignore')
                     continue
                 if self.d(resourceId=f'{self.gg_package_name}:id/btn_start_usage').exists:
@@ -323,8 +328,8 @@ class GGU2(Base):
                     runner_ready = self._wait_until(
                         'GG script runner',
                         lambda: self.d(resourceId=f'{self.gg_package_name}:id/file').exists
-                        or self.d.xpath('//*[@text="鎵ц"]').exists
-                        or self.d.xpath('//*[contains(@text,"淇敼闈㈡澘")]').exists
+                        or self.d.xpath('//*[@text="\u6267\u884c"]').exists
+                        or self.d.xpath('//*[contains(@text,"\u4fee\u6539\u9762\u677f")]').exists
                         or self.d(resourceId=f'{self.gg_package_name}:id/edit').exists,
                     )
                     if not runner_ready:
@@ -334,16 +339,16 @@ class GGU2(Base):
                         continue
                     if self._run():
                         return
-                if self.d.xpath('//*[@text="鍙栨秷"]').exists:
-                    self.d.xpath('//*[@text="鍙栨秷"]').click()
+                if self.d.xpath(f'//*[@text="{gg_cancel_text}"]').exists:
+                    self.d.xpath(f'//*[@text="{gg_cancel_text}"]').click()
                     logger.info('Close previous script dialog')
                     continue
-                if self.d.xpath('//*[@text="纭畾"]').exists:
-                    self.d.xpath('//*[@text="纭畾"]').click()
+                if self.d.xpath(f'//*[@text="{gg_confirm_text}"]').exists:
+                    self.d.xpath(f'//*[@text="{gg_confirm_text}"]').click()
                     logger.info('Confirm script dialog')
                     continue
-                if self.d.xpath('//*[@text="閲嶅惎娓告垙"]').exists:
-                    self.d.xpath('//*[@text="閲嶅惎娓告垙"]').click()
+                if self.d.xpath(f'//*[@text="{gg_restart_text}"]').exists:
+                    self.d.xpath(f'//*[@text="{gg_restart_text}"]').click()
                     logger.info('Dismiss GG restart dialog')
         except Exception as exc:
             # 统一把 GG 启动阶段的异常打到主日志，方便从最后一个阶段日志反推卡住位置。
@@ -366,8 +371,11 @@ class GGU2(Base):
             logger.critical(f'GG Lua script missing: {local_path}')
             raise FileNotFoundError(f'GG Lua script missing: {local_path}')
 
-        # 这里先在 adb 侧解析出最终可用的 Lua 路径，再把这个稳定路径填给 GG。
-        # 这样可以避免把“目录可见性判断”交给 GG 文件框试错，减少 UI 状态被扰乱的概率。
+        gg_run_text = '\u6267\u884c'
+        gg_confirm_text = '\u786e\u5b9a'
+        gg_multiply_text = '\u4fee\u6539\u9762\u677f'
+        # 这里同样使用 Unicode 转义去匹配运行、确认和倍率面板文本。
+        # 这样即使源码再次经过不同编码链路，运行时拿到的仍是正确中文，不会再把 GG 界面识别带坏。
         remote_path = self._resolve_remote_lua_path(local_path)
 
         file_path_set = False
@@ -395,20 +403,20 @@ class GGU2(Base):
             if not run_clicked:
                 if not self._wait_until(
                     'GG run button',
-                    lambda: self.d.xpath('//*[@text="鎵ц"]').exists,
+                    lambda: self.d.xpath(f'//*[@text="{gg_run_text}"]').exists,
                 ):
                     continue
-                self.d.xpath('//*[@text="鎵ц"]').click()
+                self.d.xpath(f'//*[@text="{gg_run_text}"]').click()
                 logger.info('Click run')
                 run_clicked = True
                 continue
             if not option_opened:
                 if not self._wait_until(
                     'GG multiply option',
-                    lambda: self.d.xpath('//*[contains(@text,"淇敼闈㈡澘")]').exists,
+                    lambda: self.d.xpath(f'//*[contains(@text,"{gg_multiply_text}")]').exists,
                 ):
                     continue
-                self.d.xpath('//*[contains(@text,"淇敼闈㈡澘")]').click()
+                self.d.xpath(f'//*[contains(@text,"{gg_multiply_text}")]').click()
                 logger.info('Click multiply option')
                 option_opened = True
                 continue
@@ -428,10 +436,10 @@ class GGU2(Base):
                 # 只有倍率写入完成后再等确认按钮，避免把其他旧弹窗误判成这一步的确认。
                 if not self._wait_until(
                     'GG confirm button',
-                    lambda: self.d.xpath('//*[@text="纭畾"]').exists,
+                    lambda: self.d.xpath(f'//*[@text="{gg_confirm_text}"]').exists,
                 ):
                     continue
-                self.d.xpath('//*[@text="纭畾"]').click()
+                self.d.xpath(f'//*[@text="{gg_confirm_text}"]').click()
                 logger.info('Click confirm')
                 confirmed = True
                 confirmed_at = time()
@@ -446,7 +454,7 @@ class GGU2(Base):
             )
             has_confirm = self._probe(
                 'GG settle confirm probe',
-                lambda: self.d.xpath('//*[@text="纭畾"]').exists,
+                lambda: self.d.xpath(f'//*[@text="{gg_confirm_text}"]').exists,
             )
             if has_edit or has_confirm:
                 settle_started = False
