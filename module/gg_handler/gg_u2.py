@@ -108,6 +108,113 @@ class GGU2(Base):
         logger.warning(f'{stage}: timeout after {timeout:.1f}s')
         return False
 
+    def _shell_quote(self, value):
+        """
+        将字符串转成可安全拼接到 `sh -c` 中的单引号字面量。
+        Args:
+            value: 需要传给 Android shell 的原始路径。
+        Returns:
+            str: 经过转义后的 shell 字面量。
+        Raises:
+            None
+        """
+        # 这里必须显式处理 `$MuMu12Shared` 这类路径。
+        # 如果直接拼到 shell 字符串里，`$` 会被当成环境变量展开，导致明明存在的文件被判断成不存在。
+        return "'" + value.replace("'", "'\"'\"'") + "'"
+
+    def _iter_lua_remote_paths(self):
+        """
+        返回 GG Lua 脚本支持的远端候选路径。
+        Args:
+            None
+        Returns:
+            tuple[str, ...]: 按优先级排序的远端 Lua 路径列表。
+        Raises:
+            None
+        """
+        # 不同模拟器或共享目录挂载方式不同，这里固定维护一组候选路径。
+        # 后续逻辑会优先使用设备上已存在的文件路径，只有都不存在时才补推送。
+        return (
+            '/sdcard/$MuMu12Shared/Multiplier.lua',
+            '/sdcard/Multiplier.lua',
+            '/sdcard/Notes/Multiplier.lua',
+        )
+
+    def _remote_path_exists(self, remote_path):
+        """
+        通过 adb 在设备侧判断某个远端 Lua 路径是否已存在。
+        Args:
+            remote_path: 需要检查的远端文件路径。
+        Returns:
+            bool: `True` 表示文件已存在，`False` 表示不存在或本轮检查失败。
+        Raises:
+            None
+        """
+        # 这里先在 adb 侧判断文件是否存在，而不是让 GG 文件输入框试错。
+        # 好处是能避开 GG UI 可见性差异，先把真正存在的路径选出来，再进行后续按钮流程。
+        quoted = self._shell_quote(remote_path)
+        command = f'if [ -f {quoted} ]; then echo 1; else echo 0; fi'
+        try:
+            result = self.device.adb_shell(['sh', '-c', command])
+        except Exception as exc:
+            logger.warning(f'Check Lua path failed: {remote_path} ({exc.__class__.__name__})')
+            return False
+
+        if isinstance(result, bytes):
+            result = result.decode('utf-8', errors='ignore')
+        result = str(result).strip()
+        exists = result.endswith('1')
+        logger.info(f'Lua path exists={exists}: {remote_path}')
+        return exists
+
+    def _push_lua_candidates(self, local_path):
+        """
+        将本地 Lua 脚本推送到所有候选远端位置。
+        Args:
+            local_path: 本地 Lua 文件路径。
+        Returns:
+            None
+        Raises:
+            Exception: 当 adb 创建目录或推送文件失败时继续向上抛出。
+        """
+        # 这里采用“全量预推送”而不是只推某一个目录。
+        # 原因是不同模拟器暴露给 GG 的可见目录不同，先把候选位置都准备好，后面才能稳定命中。
+        for remote_path in self._iter_lua_remote_paths():
+            remote_dir = remote_path.rsplit('/', 1)[0]
+            self.device.adb_shell(['mkdir', '-p', remote_dir])
+            self.device.adb_shell(['rm', '-f', remote_path])
+            self.device.adb_push(str(local_path), remote_path)
+            logger.info(f'Lua pushed to {remote_path}')
+
+    def _resolve_remote_lua_path(self, local_path):
+        """
+        解析本次应填给 GG 的远端 Lua 路径。
+        Args:
+            local_path: 本地 Lua 文件路径，仅在需要补推送时使用。
+        Returns:
+            str: 最终选中的远端 Lua 路径。
+        Raises:
+            Exception: 当补推送阶段失败时继续向上抛出。
+        """
+        # 这里优先信任设备上已经存在的文件，避免每次都重推覆盖用户手动放进去的版本。
+        # 如果三个路径都不存在，再统一推送一轮并重新检查，尽量把“准备资源”和“驱动 GG UI”分离。
+        for remote_path in self._iter_lua_remote_paths():
+            if self._remote_path_exists(remote_path):
+                logger.info(f'Use existing Lua path: {remote_path}')
+                return remote_path
+
+        logger.warning('No existing Lua path found on device, pushing Lua to candidate paths')
+        self._push_lua_candidates(local_path)
+
+        for remote_path in self._iter_lua_remote_paths():
+            if self._remote_path_exists(remote_path):
+                logger.info(f'Use pushed Lua path: {remote_path}')
+                return remote_path
+
+        # 理论上推送成功后至少应该命中一个候选路径。
+        # 如果仍全部不存在，直接抛错比继续让 GG 盲填路径更容易排查。
+        raise FileNotFoundError('GG Lua script was pushed but no remote candidate path is visible on device')
+
     def set_on(self, factor=200):
         """
         打开 GG 并执行倍率脚本。
@@ -254,17 +361,14 @@ class GGU2(Base):
             FileNotFoundError: 本地 `bin/Lua/Multiplier.lua` 缺失时抛出。
             Exception: 设备交互或 UI 操作失败时继续向上抛出。
         """
-        # 这里统一把 Lua 推到 /sdcard 根目录，兼容当前已经验证过的 GG 路径。
-        # 先检查本地文件存在，再删除远端旧文件，避免资源缺失时把用户设备上的旧脚本先删掉。
-        remote_path = '/sdcard/Multiplier.lua'
         local_path = Path('bin/Lua/Multiplier.lua')
         if not local_path.exists():
             logger.critical(f'GG Lua script missing: {local_path}')
             raise FileNotFoundError(f'GG Lua script missing: {local_path}')
 
-        self.device.adb_shell(['rm', '-f', remote_path])
-        self.device.adb_push(str(local_path), remote_path)
-        logger.info('Lua pushed')
+        # 这里先在 adb 侧解析出最终可用的 Lua 路径，再把这个稳定路径填给 GG。
+        # 这样可以避免把“目录可见性判断”交给 GG 文件框试错，减少 UI 状态被扰乱的概率。
+        remote_path = self._resolve_remote_lua_path(local_path)
 
         file_path_set = False
         run_clicked = False
