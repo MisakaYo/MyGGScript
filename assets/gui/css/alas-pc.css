@@ -10,8 +10,14 @@
 }
 
 #pywebio-scope-overview {
+    grid-auto-flow: row;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+#pywebio-scope-overview_main {
     grid-auto-flow: column;
     grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 1fr);
+    min-height: 0;
 }
 
 #pywebio-scope-daemon-overview {
@@ -24,6 +30,7 @@
     grid-template-rows: auto 7.75rem minmax(7.75rem, 13rem) minmax(7.75rem, 1fr);
     height: 100%;
     overflow-y: auto;
+    min-height: 0;
 }
 
 #pywebio-scope-log-bar,

@@ -751,14 +751,18 @@ class AlasGUI(Frame):
             return
 
         groups = self._log.dashboard_arg_group or []
+        # 折叠时只保留标题栏和开关，不再渲染任何资源卡片。
+        # 这样可以保证 Dashboard 始终固定在顶部，同时不会因为“只显示前四项”让用户误以为数据缺失。
         if not self._log.display_dashboard:
-            groups = groups[:4]
+            groups = []
 
         with use_scope("dashboard", clear=True):
-            if not groups:
-                return
             put_text(t("Gui.Overview.Dashboard")).style("font-size: 1rem; margin: 0 0 .4rem .1rem;")
-            put_scope("dashboard_grid")
+            if groups:
+                put_scope("dashboard_grid")
+
+        if not groups:
+            return
 
         with use_scope("dashboard_grid", clear=True):
             for group_name in groups:
