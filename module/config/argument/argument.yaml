@@ -734,6 +734,83 @@ OpsiHazard1Leveling:
     value: 0
     option: [ 0, 44, 22 ]
 
+# ==================== Dashboard ====================
+# 这里定义资源面板每个卡片的数据结构，供 config_updater 生成 args/template。
+# Value/Total/Record/Color 必须和 LogRes 及 WebUI 的读取字段保持一致，否则前端会找不到值。
+Oil:
+  Value: 0
+  Color:
+    value: ^74C365
+    display: hide
+  Record: 2020-01-01 00:00:00
+Coin:
+  Value: 0
+  Color:
+    value: ^F0C24B
+    display: hide
+  Record: 2020-01-01 00:00:00
+Gem:
+  Value: 0
+  Color:
+    value: ^F06C96
+    display: hide
+  Record: 2020-01-01 00:00:00
+Pt:
+  Value: 0
+  Color:
+    value: ^67A7F8
+    display: hide
+  Record: 2020-01-01 00:00:00
+Cube:
+  Value: 0
+  Color:
+    value: ^7FA3F6
+    display: hide
+  Record: 2020-01-01 00:00:00
+ActionPoint:
+  Value: 0
+  Total: 0
+  Color:
+    value: ^F29B38
+    display: hide
+  Record: 2020-01-01 00:00:00
+YellowCoin:
+  Value: 0
+  Color:
+    value: ^D8B34D
+    display: hide
+  Record: 2020-01-01 00:00:00
+PurpleCoin:
+  Value: 0
+  Color:
+    value: ^9D7AE6
+    display: hide
+  Record: 2020-01-01 00:00:00
+Core:
+  Value: 0
+  Color:
+    value: ^E98A52
+    display: hide
+  Record: 2020-01-01 00:00:00
+Medal:
+  Value: 0
+  Color:
+    value: ^C6A864
+    display: hide
+  Record: 2020-01-01 00:00:00
+Merit:
+  Value: 0
+  Color:
+    value: ^6EA6D9
+    display: hide
+  Record: 2020-01-01 00:00:00
+GuildCoin:
+  Value: 0
+  Color:
+    value: ^58B894
+    display: hide
+  Record: 2020-01-01 00:00:00
+
 # ==================== Tools ====================
 
 Daemon:
@@ -764,4 +841,33 @@ AzurLaneUncensored:
     value: https://gitee.com/LmeSzinc/AzurLaneUncensored
     display: disabled
 GameManager:
+  # 仍沿用主线的自动重登开关，GG 补丁只在这里补挂额外参数，
+  # 这样能兼容上游现有的游戏重启链路，不额外改变默认行为。
   AutoRestart: true
+
+GGHandler:
+  # GGHandler 参数只描述恢复和倍率同步策略，
+  # 具体执行仍由 module/gg_handler 内部处理，避免配置层和运行层耦合过深。
+  Enabled: false
+  RestartATX: false
+  GGPackageName: com.
+  AutoRestartGG: false
+  RestartEverytime:
+    value: true
+    display: disabled
+  GGMultiplyingFactor: 200
+  DisabledTask:
+    value: disable_all_dangerous_task
+    option: [
+      disable_all_dangerous_task,
+      disable_guild_and_dangerous,
+      disable_exercise,
+      enable_all,
+    ]
+
+PowerLimit:
+  # 这些阈值是 GG 风险任务前的最后一道保护，
+  # 如果未来上游改了战力读取逻辑，这里仍能保持独立调节而不影响普通任务。
+  Exercise: 16500
+  Raid: 16500
+  Ash: 16500

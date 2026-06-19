@@ -9,6 +9,7 @@ from uiautomator2.xpath import XPath, XPathSelector
 import module.config.server as server
 from module.base.timer import Timer
 from module.base.utils import color_similarity_2d, crop
+from module.gg_handler.gg_handler import GGHandler
 from module.handler.assets import *
 from module.logger import logger
 from module.map.assets import *
@@ -30,6 +31,8 @@ class LoginHandler(UI):
             GameNotRunningError:
         """
         logger.hr('App login')
+        # 登录前先处理 GG 遗留状态，避免残留弹窗挡住正常登录链路。
+        GGHandler(config=self.config, device=self.device).handle_restart()
 
         confirm_timer = Timer(1.5, count=4).start()
         orientation_timer = Timer(5)
@@ -161,6 +164,8 @@ class LoginHandler(UI):
 
     def app_restart(self):
         logger.hr('App restart')
+        # 部分设备的 uiautomator2 会在 GG 频繁切前后台后失联，这里按配置决定是否先重置 ATX。
+        GGHandler(config=self.config, device=self.device).handle_u2_restart()
         self.device.app_stop()
         self.device.app_start()
         self.handle_app_login()

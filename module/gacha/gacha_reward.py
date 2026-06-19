@@ -5,6 +5,7 @@ from module.exception import ScriptError
 from module.gacha.assets import *
 from module.gacha.ui import GachaUI
 from module.handler.assets import POPUP_CONFIRM, STORY_SKIP
+from module.log_res.log_res import LogRes
 from module.logger import logger
 from module.ocr.ocr import Digit
 from module.retire.retirement import Retirement
@@ -125,6 +126,9 @@ class RewardGacha(GachaUI, Retirement):
         logger.info(f'Able to submit up to {target_count} build orders')
         self.build_coin_count -= gold_total
         self.build_cube_count -= cube_total
+        # 抽卡会直接消耗魔方，提交建造后马上同步剩余值，避免资源面板滞后。
+        LogRes(self.config).Cube = self.build_cube_count
+        self.config.update()
         return target_count
 
     def gacha_goto_pool(self, target_pool):

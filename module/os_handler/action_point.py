@@ -5,6 +5,7 @@ from module.base.button import ButtonGrid
 from module.base.timer import Timer
 from module.base.utils import *
 from module.config.utils import get_server_next_update
+from module.log_res.log_res import LogRes
 from module.logger import logger
 from module.ocr.ocr import Digit, DigitCounter
 from module.os_handler.assets import *
@@ -138,6 +139,10 @@ class ActionPointHandler(UI, MapEventHandler):
         oil = box[0]
 
         logger.info(f'Action points: {current}({total}), oil: {oil}')
+        # 行动点和油量是同一屏读出来的，放在这里一起更新能避免前端看到跨页面不同步的状态。
+        LogRes(self.config).Oil = oil
+        LogRes(self.config).ActionPoint = {'Value': current, 'Total': total}
+        self.config.update()
         self._action_point_current = current
         self._action_point_box = box
         self._action_point_total = total

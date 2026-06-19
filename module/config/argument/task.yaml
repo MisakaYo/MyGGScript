@@ -342,4 +342,8 @@ Tool:
     AzurLaneUncensored:
       - AzurLaneUncensored
     GameManager:
+      # 这里把 GG 相关参数组挂到游戏管理器下，保持旧 GG 版的使用入口，
+      # 同时避免把配置散落到独立菜单里，降低后续同步上游时的冲突面。
       - GameManager
+      - GGHandler
+      - PowerLimit

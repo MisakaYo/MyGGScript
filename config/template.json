@@ -1953,8 +1953,85 @@
     "GameManager": {
       "AutoRestart": true
     },
+    "GGHandler": {
+      "Enabled": false,
+      "RestartATX": false,
+      "GGPackageName": "com.",
+      "AutoRestartGG": false,
+      "RestartEverytime": true,
+      "GGMultiplyingFactor": 200,
+      "DisabledTask": "disable_all_dangerous_task"
+    },
+    "PowerLimit": {
+      "Exercise": 16500,
+      "Raid": 16500,
+      "Ash": 16500
+    },
     "Storage": {
       "Storage": {}
+    }
+  },
+  "Dashboard": {
+    "Oil": {
+      "Value": 0,
+      "Color": "^74C365",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "Coin": {
+      "Value": 0,
+      "Color": "^F0C24B",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "Gem": {
+      "Value": 0,
+      "Color": "^F06C96",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "Pt": {
+      "Value": 0,
+      "Color": "^67A7F8",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "Cube": {
+      "Value": 0,
+      "Color": "^7FA3F6",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "ActionPoint": {
+      "Value": 0,
+      "Total": 0,
+      "Color": "^F29B38",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "YellowCoin": {
+      "Value": 0,
+      "Color": "^D8B34D",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "PurpleCoin": {
+      "Value": 0,
+      "Color": "^9D7AE6",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "Core": {
+      "Value": 0,
+      "Color": "^E98A52",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "Medal": {
+      "Value": 0,
+      "Color": "^C6A864",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "Merit": {
+      "Value": 0,
+      "Color": "^6EA6D9",
+      "Record": "2020-01-01 00:00:00"
+    },
+    "GuildCoin": {
+      "Value": 0,
+      "Color": "^58B894",
+      "Record": "2020-01-01 00:00:00"
     }
   }
 }

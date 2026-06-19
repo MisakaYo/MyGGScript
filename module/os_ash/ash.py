@@ -56,6 +56,10 @@ class AshCombat(Combat):
         return False
 
     def handle_battle_preparation(self):
+        # META/ASH 战斗前先做一次战力阈值检查，避免忘记关闭 GG 倍率导致危险任务误开挂。
+        from module.gg_handler.gg_handler import GGHandler
+
+        GGHandler(config=self.config, device=self.device).power_limit('Ash')
         if super().handle_battle_preparation():
             return True
 

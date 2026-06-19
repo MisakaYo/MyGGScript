@@ -150,6 +150,14 @@ class ConfigGenerator:
         return read_file(filepath_argument('gui'))
 
     @cached_property
+    def dashboard(self):
+        """
+        <dashboard>:
+          - <group>
+        """
+        return read_file(filepath_argument('dashboard'))
+
+    @cached_property
     @timer
     def args(self):
         """
@@ -174,6 +182,14 @@ class ConfigGenerator:
                     print(f'`{task}.{group}` is not related to any argument group')
                     continue
                 deep_set(data, keys=[task, group], value=deepcopy(self.argument[group]))
+
+        # Dashboard 不属于常规任务配置，但需要和 args/template 走同一套生成流程。
+        for dashboard, groups in self.dashboard.items():
+            for group in groups:
+                if group not in self.argument:
+                    print(f'`{dashboard}.{group}` is not related to any argument group')
+                    continue
+                deep_set(data, keys=[dashboard, group], value=deepcopy(self.argument[group]))
 
         def check_override(path, value):
             # Check existence
@@ -473,8 +489,10 @@ class ConfigGenerator:
     @staticmethod
     def generate_deploy_template():
         template = poor_yaml_read(DEPLOY_TEMPLATE)
+        # 便携发布和一键部署都应默认指向当前维护仓库，避免安装后又被拉回上游原仓库。
+        repository = 'https://github.com/MisakaYo/MyGGScript'
         cn = {
-            'Repository': 'git://git.lyoko.io/AzurLaneAutoScript',
+            'Repository': repository,
             'PypiMirror': 'https://mirrors.aliyun.com/pypi/simple',
             'Language': 'zh-CN',
         }

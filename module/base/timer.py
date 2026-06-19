@@ -1,6 +1,61 @@
+from threading import Thread
 from time import time, sleep
 from datetime import datetime, timedelta
 from functools import wraps
+
+
+def timeout(func, timeout_sec=30.0, *args, **kwargs):
+    """
+    以辅助线程执行函数，并返回是否发生超时。
+
+    Args:
+        func: 需要执行的可调用对象。
+        timeout_sec: 最长等待秒数。
+        *args: 传给 ``func`` 的位置参数。
+        **kwargs: 传给 ``func`` 的关键字参数。
+
+    Returns:
+        bool: ``True`` 表示等待超时，``False`` 表示在时限内完成。
+
+    Notes:
+        这里故意不强杀超时线程，只保留 GG 链路依赖的“检测是否卡住”语义，
+        这样能兼容旧流程的调用约定，避免为了迁移而改动多处业务链路。
+    """
+    from module.logger import logger
+
+    result = {'error': None}
+
+    def runner():
+        """
+        执行目标函数并缓存异常。
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None: 子线程异常先缓存再回抛，避免主流程把失败误判成正常完成。
+        """
+        try:
+            func(*args, **kwargs)
+        except Exception as exc:
+            result['error'] = exc
+
+    started_at = time()
+    worker = Thread(target=runner)
+    worker.start()
+    worker.join(timeout_sec)
+    timed_out = worker.is_alive()
+    elapsed = time() - started_at
+    if result['error'] is not None:
+        logger.exception(result['error'])
+        logger.hr(f'{func.__name__}: Failed in {round(elapsed, 1)}s', 1)
+        raise result['error']
+    status = "Failed" if timed_out else "Done"
+    logger.hr(f'{func.__name__}: {status} in {round(elapsed, 1)}s', 1)
+    return timed_out
 
 
 def timer(function):

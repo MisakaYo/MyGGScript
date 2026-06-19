@@ -52,6 +52,7 @@ from module.config.utils import (
     filepath_config,
     read_file,
 )
+from module.log_res.log_res import LogRes
 from module.logger import logger
 from module.ocr.rpc import start_ocr_server_process, stop_ocr_server_process
 from module.submodule.submodule import load_config
@@ -121,6 +122,7 @@ class AlasGUI(Frame):
         self.inst_cache = []
         self.load_home = False
         self.af_flag = False
+        self._log = None
 
     @use_scope("aside", clear=True)
     def set_aside(self) -> None:
@@ -413,7 +415,14 @@ class AlasGUI(Frame):
         self.init_menu(name="Overview")
         self.set_title(t(f"Gui.MenuAlas.Overview"))
 
-        put_scope("overview", [put_scope("schedulers"), put_scope("logs")])
+        # 总览页拆成“资源面板 + 调度/日志主区”，避免资源卡片直接挤占日志滚动容器高度。
+        put_scope(
+            "overview",
+            [
+                put_scope("dashboard"),
+                put_scope("overview_main", [put_scope("schedulers"), put_scope("logs")]),
+            ],
+        )
 
         with use_scope("schedulers"):
             put_scope(
@@ -462,6 +471,9 @@ class AlasGUI(Frame):
         )
 
         log = RichLog("log")
+        self._log = log
+        # Dashboard 分组来源统一从配置定义读取，避免前端硬编码资源项顺序后与配置生成结果脱节。
+        self._log.dashboard_arg_group = LogRes(self.alas_config).groups
 
         with use_scope("logs"):
             put_scope(
@@ -474,6 +486,7 @@ class AlasGUI(Frame):
                         "log-bar-btns",
                         [
                             put_scope("log_scroll_btn"),
+                            put_scope("dashboard_btn"),
                         ],
                     ),
                 ],
@@ -493,10 +506,39 @@ class AlasGUI(Frame):
             scope="log_scroll_btn",
         )
 
+        switch_dashboard = BinarySwitchButton(
+            label_on=t("Gui.Button.DashboardON"),
+            label_off=t("Gui.Button.DashboardOFF"),
+            onclick_on=lambda: self.set_dashboard_display(False),
+            onclick_off=lambda: self.set_dashboard_display(True),
+            get_state=lambda: log.display_dashboard,
+            color_on="off",
+            color_off="on",
+            scope="dashboard_btn",
+        )
+
         self.task_handler.add(switch_scheduler.g(), 1, True)
         self.task_handler.add(switch_log_scroll.g(), 1, True)
+        self.task_handler.add(switch_dashboard.g(), 1, True)
         self.task_handler.add(self.alas_update_overview_task, 10, True)
+        self.task_handler.add(self.alas_update_dashboard, 10, True)
         self.task_handler.add(log.put_log(self.alas), 0.25, True)
+
+    def set_dashboard_display(self, b: bool) -> None:
+        """
+        切换资源面板展示状态。
+
+        Args:
+            b: `True` 表示展开全部资源卡片，`False` 表示只展示精简视图。
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
+        self._log.set_dashboard_display(b)
+        self.alas_update_dashboard()
 
     def _init_alas_config_watcher(self) -> None:
         def put_queue(path, value):
@@ -636,6 +678,92 @@ class AlasGUI(Frame):
                     put_task(task)
             else:
                 put_text(t("Gui.Overview.NoTask")).style("--overview-notask-text--")
+
+    def _render_dashboard_group(self, group_name: str) -> None:
+        """
+        渲染单个资源卡片。
+
+        Args:
+            group_name: Dashboard 分组名，例如 `Oil`、`Pt`。
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
+        group = deep_get(self.alas_config.data, keys=f"Dashboard.{group_name}", default=None)
+        if not group:
+            return
+
+        value = group.get("Value", 0)
+        suffix = ""
+        if group.get("Limit"):
+            suffix = f' / {group["Limit"]}'
+        elif group.get("Total"):
+            suffix = f' / {group["Total"]}'
+        elif group_name == "Pt":
+            pt_limit = deep_get(self.alas_config.data, keys="EventGeneral.EventGeneral.PtLimit", default=0)
+            if pt_limit:
+                suffix = f" / {pt_limit}"
+
+        subtitle = t(f"Gui.Overview.{group_name}")
+        record = group.get("Record")
+        if hasattr(record, "strftime") and record.year > 2020:
+            subtitle = f"{subtitle} | {record:%m-%d %H:%M}"
+
+        color = str(group.get("Color", "^808080")).replace("^", "#")
+        with use_scope(f"dashboard_{group_name}", clear=True):
+            put_row(
+                [
+                    put_html(f'<div class="status-point" style="background-color:{color};"></div>'),
+                    put_column(
+                        [
+                            put_row(
+                                [
+                                    put_text(str(value)).style("--dashboard-value--"),
+                                    put_text(suffix).style("--dashboard-limit--"),
+                                ],
+                                size="auto auto",
+                            ),
+                            put_text(subtitle).style("--dashboard-help--"),
+                        ],
+                        size="auto auto",
+                    ),
+                ],
+                size="20px 1fr",
+            )
+
+    def alas_update_dashboard(self) -> None:
+        """
+        刷新资源面板。
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
+        if not self.visible or self._log is None:
+            return
+
+        groups = self._log.dashboard_arg_group or []
+        if not self._log.display_dashboard:
+            groups = groups[:4]
+
+        with use_scope("dashboard", clear=True):
+            if not groups:
+                return
+            put_text(t("Gui.Overview.Dashboard")).style("font-size: 1rem; margin: 0 0 .4rem .1rem;")
+            put_scope("dashboard_grid")
+
+        with use_scope("dashboard_grid", clear=True):
+            for group_name in groups:
+                put_scope(f"dashboard_{group_name}")
+                self._render_dashboard_group(group_name)
 
     @use_scope("content", clear=True)
     def alas_daemon_overview(self, task: str) -> None:
@@ -818,8 +946,9 @@ class AlasGUI(Frame):
                 )
             with use_scope("updater_detail", clear=True):
                 put_text(t("Gui.Update.DetailedHistory"))
+                # 详细历史这里只展示最近少量提交，避免更新弹窗被长列表撑爆，同时减少无关旧作者信息暴露。
                 history = updater.get_commit(
-                    f"origin/{updater.Branch}", n=20, short_sha1=True
+                    f"origin/{updater.Branch}", n=5, short_sha1=True
                 )
                 put_table(
                     [commit for commit in history],

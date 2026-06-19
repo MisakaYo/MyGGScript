@@ -6,6 +6,7 @@ from module.base.timer import Timer
 from module.config.config import Function
 from module.config.utils import get_server_next_update
 from module.logger import logger
+from module.log_res.log_res import LogRes
 from module.map.map_grids import SelectedGrids
 from module.ocr.ocr import Digit
 from module.os_shop.assets import OS_SHOP_CHECK, OS_SHOP_PURPLE_COINS, SHOP_PURPLE_COINS, SHOP_YELLOW_COINS
@@ -77,15 +78,22 @@ class OSStatus(UI):
             else:
                 break
 
+        # 黄币只在商店/OS 相关页面稳定可读，这里成功读出后就同步到资源面板。
+        LogRes(self.config).YellowCoin = yellow_coins
         return yellow_coins
 
     def get_purple_coins(self) -> int:
         if self.appear(OS_SHOP_CHECK):
-            return OCR_OS_SHOP_PURPLE_COINS.ocr(self.device.image)
+            amount = OCR_OS_SHOP_PURPLE_COINS.ocr(self.device.image)
         else:
-            return OCR_SHOP_PURPLE_COINS.ocr(self.device.image)
+            amount = OCR_SHOP_PURPLE_COINS.ocr(self.device.image)
+        LogRes(self.config).PurpleCoin = amount
+        return amount
 
     def os_shop_get_coins(self):
         self._shop_yellow_coins = self.get_yellow_coins()
         self._shop_purple_coins = self.get_purple_coins()
+        # 两类币种可能在同一轮采集中同时变化，这里统一落盘，避免只写一半导致时间戳不一致。
+        if self.config.modified:
+            self.config.update()
         logger.info(f'Yellow coins: {self._shop_yellow_coins}, purple coins: {self._shop_purple_coins}')

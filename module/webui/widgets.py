@@ -93,6 +93,10 @@ class RichLog:
         # self._callback_thread = None
         # self._width = 80
         self.keep_bottom = True
+        # 默认展开资源面板，避免用户首次进入总览时只看到前四项，
+        # 误以为其余资源没有记录或刷新失败。
+        self.display_dashboard = True
+        self.dashboard_arg_group = []
         if State.theme == "dark":
             self.terminal_theme = DARK_TERMINAL_THEME
         else:
@@ -137,6 +141,9 @@ class RichLog:
     def set_scroll(self, b: bool) -> None:
         # use for lambda callback function
         self.keep_bottom = b
+
+    def set_dashboard_display(self, b: bool) -> None:
+        self.display_dashboard = b
 
     def get_width(self):
         js = """

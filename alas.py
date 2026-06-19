@@ -11,6 +11,7 @@ from module.base.decorator import del_cached_property
 from module.config.config import AzurLaneConfig, TaskEnd
 from module.config.deep import deep_get, deep_set
 from module.exception import *
+from module.gg_handler.gg_handler import GGHandler
 from module.logger import logger
 from module.notify import handle_notify
 
@@ -517,6 +518,10 @@ class AzurLaneAutoScript:
     def loop(self):
         logger.set_file_logger(self.config_name)
         logger.info(f'Start scheduler loop: {self.config_name}')
+        # 这里在调度器主循环启动前先同步一次 GG 状态，避免首次任务执行前沿用上次异常退出留下的倍率状态。
+        self.checker.wait_until_available()
+        GGHandler(config=self.config, device=self.device).handle_restart_before_tasks()
+        check_fail = 0
 
         while 1:
             # Check update event from GUI
@@ -546,6 +551,24 @@ class AzurLaneAutoScript:
                 self.config.task_delay(server_update=True)
                 del_cached_property(self, 'config')
                 continue
+
+            # 每次进入具体任务前都重新校验 GG 配置与当前任务是否允许开启倍率。
+            # 连续失败超过阈值后直接通知接管，避免设备反复卡死在同一故障点。
+            GGHandler(config=self.config, device=self.device).check_config()
+            try:
+                GGHandler(config=self.config, device=self.device).check_then_set_gg_status(inflection.underscore(task))
+                check_fail = 0
+            except GameStuckError:
+                del_cached_property(self, 'config')
+                check_fail += 1
+                if check_fail <= 3:
+                    continue
+                handle_notify(
+                    self.config.Error_OnePushConfig,
+                    title=f"Alas <{self.config.config_name}> crashed",
+                    content=f"<{self.config.config_name}> RequestHumanTakeover.\nMaybe your emulator died.",
+                )
+                exit(1)
 
             # Run
             logger.info(f'Scheduler: Start task `{task}`')
