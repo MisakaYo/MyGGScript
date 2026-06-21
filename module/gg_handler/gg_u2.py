@@ -374,6 +374,7 @@ class GGU2(Base):
         gg_run_text = '\u6267\u884c'
         gg_confirm_text = '\u786e\u5b9a'
         gg_multiply_text = '\u4fee\u6539\u9762\u677f'
+        gg_script_finished_text = '\u811a\u672c\u5df2\u7ed3\u675f'
         # 这里同样使用 Unicode 转义去匹配运行、确认和倍率面板文本。
         # 这样即使源码再次经过不同编码链路，运行时拿到的仍是正确中文，不会再把 GG 界面识别带坏。
         remote_path = self._resolve_remote_lua_path(local_path)
@@ -456,6 +457,19 @@ class GGU2(Base):
                 'GG settle confirm probe',
                 lambda: self.d.xpath(f'//*[@text="{gg_confirm_text}"]').exists,
             )
+            has_script_finished = self._probe(
+                'GG settle script finished probe',
+                lambda: self.d.xpath(f'//*[contains(@text,\"{gg_script_finished_text}\")]').exists,
+            )
+            # GG 某些版本会在倍率脚本收尾时再弹一次“脚本已结束”确认框。
+            # 如果这里只是等待“确定”自己消失，Alas 会一直卡在 GG 前台，最后把它当成 unknown page。
+            # 因此这里在确认看到结束文案后主动补点一次确定，兼容二次确认而不影响前面的倍率输入确认。
+            if has_confirm and has_script_finished:
+                self.d.xpath(f'//*[@text=\"{gg_confirm_text}\"]').click()
+                logger.info('Confirm GG finished dialog')
+                settle_started = False
+                self.device.sleep(1)
+                continue
             if has_edit or has_confirm:
                 settle_started = False
                 continue
