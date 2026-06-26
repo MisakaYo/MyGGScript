@@ -772,6 +772,7 @@
       "event_20260326_cn": "漫游者招募计划",
       "event_20260417_cn": "假日航线闪耀海滨",
       "event_20260520_cn": "圣印前的同盟",
+      "event_20260625_cn": "缇庢ⅵ宸℃紨濂囧澶?",
       "raid_20200624": "复刻特别演习埃塞克斯级",
       "raid_20210708": "复刻穿越彼方的水线",
       "raid_20220127": "演习神秘事件调查",
@@ -1209,7 +1210,7 @@
     },
     "ChangeVanguard": {
       "name": "更换前排",
-      "help": "当前排红脸时更换前排，选择不更换则会强制红脸出击\n换前排通过找一艘心情不低于10、等级100的白鹰或铁血的白皮驱逐完成，所以尽量保证有足够多的驱逐。国服以外则为等级70的白鹰白船驱逐。\n\n换装备只会更换正在装备中的栏位，即使是白装也会更换。前排会更换全部5个装备。",
+      "help": "当前排红脸时更换前排，选择不更换则会强制红脸出击\n换前排通过找一艘心情不低于10、等级100的白鹰或铁血的白皮驱逐完成，所以尽量保证有足够多的驱逐。国服以外则为等级70的白鹰白船驱逐。",
       "disabled": "不更换",
       "ship": "更换舰船"
     },
@@ -2857,58 +2858,58 @@
   },
   "GGHandler": {
     "_info": {
-      "name": "GG 处理器",
-      "help": "管理 GameGuardian 的恢复、倍率同步与任务前自动处理。"
+      "name": "GGHandler._info.name",
+      "help": "GGHandler._info.help"
     },
     "Enabled": {
-      "name": "启用 GG 处理",
-      "help": "使用 GameGuardian 时启用，方便 Alas 处理弹窗并保持倍率状态一致。"
+      "name": "GGHandler.Enabled.name",
+      "help": "GGHandler.Enabled.help"
     },
     "RestartATX": {
-      "name": "重启 ATX 与 U2",
-      "help": "在重启游戏前重启 ATX 和 UiAutomator2，部分模拟器需要，部分环境可能不安全。"
+      "name": "GGHandler.RestartATX.name",
+      "help": "GGHandler.RestartATX.help"
     },
     "GGPackageName": {
-      "name": "GG 包名",
-      "help": "GameGuardian 的包名，通常是 Android/data 下的随机 com.* 包名。"
+      "name": "GGHandler.GGPackageName.name",
+      "help": "GGHandler.GGPackageName.help"
     },
     "AutoRestartGG": {
-      "name": "自动启用倍率",
-      "help": "在允许的任务开始前自动执行默认 GG 倍率脚本。"
+      "name": "GGHandler.AutoRestartGG.name",
+      "help": "GGHandler.AutoRestartGG.help"
     },
     "RestartEverytime": {
-      "name": "启动 Alas 时重置",
-      "help": "在计划任务启动前先重启一次，确保 GG 状态与当前配置同步。"
+      "name": "GGHandler.RestartEverytime.name",
+      "help": "GGHandler.RestartEverytime.help"
     },
     "GGMultiplyingFactor": {
-      "name": "倍率",
-      "help": "默认写入 GG 脚本的倍率值。"
+      "name": "GGHandler.GGMultiplyingFactor.name",
+      "help": "GGHandler.GGMultiplyingFactor.help"
     },
     "DisabledTask": {
-      "name": "禁用 GG 的任务",
-      "help": "建议对敏感任务关闭倍率，避免误判或异常流程。",
-      "disable_all_dangerous_task": "禁用危险任务",
-      "disable_guild_and_dangerous": "禁用公会与危险任务",
-      "disable_exercise": "只禁用演习",
-      "enable_all": "全部启用"
+      "name": "GGHandler.DisabledTask.name",
+      "help": "GGHandler.DisabledTask.help",
+      "disable_all_dangerous_task": "disable_all_dangerous_task",
+      "disable_guild_and_dangerous": "disable_guild_and_dangerous",
+      "disable_exercise": "disable_exercise",
+      "enable_all": "enable_all"
     }
   },
   "PowerLimit": {
     "_info": {
-      "name": "战力阈值",
-      "help": "危险战斗前的最后保护；若读取到的战力过高，则会重启并重新套用 GG 处理。"
+      "name": "PowerLimit._info.name",
+      "help": "PowerLimit._info.help"
     },
     "Exercise": {
-      "name": "演习",
-      "help": ""
+      "name": "PowerLimit.Exercise.name",
+      "help": "PowerLimit.Exercise.help"
     },
     "Raid": {
-      "name": "突袭",
-      "help": ""
+      "name": "PowerLimit.Raid.name",
+      "help": "PowerLimit.Raid.help"
     },
     "Ash": {
-      "name": "ASH 信标",
-      "help": ""
+      "name": "PowerLimit.Ash.name",
+      "help": "PowerLimit.Ash.help"
     }
   },
   "Storage": {
@@ -2935,8 +2936,8 @@
       "Stop": "停止",
       "ScrollON": "自动滚动 开",
       "ScrollOFF": "自动滚动 关",
-      "DashboardON": "折叠",
-      "DashboardOFF": "展开",
+      "DashboardON": "Gui.Button.DashboardON",
+      "DashboardOFF": "Gui.Button.DashboardOFF",
       "ClearLog": "清空日志",
       "Setting": "设置",
       "CheckUpdate": "检查更新",
@@ -2970,23 +2971,23 @@
     "Overview": {
       "Scheduler": "调度器",
       "Log": "日志",
-      "Dashboard": "资源面板",
+      "Dashboard": "Gui.Overview.Dashboard",
       "Running": "运行中",
       "Pending": "队列中",
       "Waiting": "等待中",
       "NoTask": "无任务",
-      "Oil": "石油",
-      "Coin": "金币",
-      "Gem": "钻石",
-      "Pt": "活动 PT",
-      "Cube": "魔方",
-      "ActionPoint": "行动力",
-      "YellowCoin": "黄币",
-      "PurpleCoin": "紫币",
-      "Core": "核心",
-      "Medal": "勋章",
-      "Merit": "功勋",
-      "GuildCoin": "公会币"
+      "Oil": "Gui.Overview.Oil",
+      "Coin": "Gui.Overview.Coin",
+      "Gem": "Gui.Overview.Gem",
+      "Pt": "Gui.Overview.Pt",
+      "Cube": "Gui.Overview.Cube",
+      "ActionPoint": "Gui.Overview.ActionPoint",
+      "YellowCoin": "Gui.Overview.YellowCoin",
+      "PurpleCoin": "Gui.Overview.PurpleCoin",
+      "Core": "Gui.Overview.Core",
+      "Medal": "Gui.Overview.Medal",
+      "Merit": "Gui.Overview.Merit",
+      "GuildCoin": "Gui.Overview.GuildCoin"
     },
     "AddAlas": {
       "PopupTitle": "添加新配置",

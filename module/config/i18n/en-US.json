@@ -772,6 +772,7 @@
       "event_20260326_cn": "The Vagabond’s Recruitment Plan",
       "event_20260417_cn": "Vacation Lane – Beachside Brilliance",
       "event_20260520_cn": "Alliance Before the Hagiobull",
+      "event_20260625_cn": "Miracle by Midnight",
       "raid_20200624": "Air Raid Drills with Essex Rerun",
       "raid_20210708": "Cross Wave rerun",
       "raid_20220127": "Mystery Investigation",
@@ -1209,7 +1210,7 @@
     },
     "ChangeVanguard": {
       "name": "Change Vanguard",
-      "help": "Change vanguard if flagship or vanguard are emotion exhausted. If you choose not to change, your fleet will ignore the low emotion warning and continue combat.\nSwitch out to new level 100(70) common vanguard from eagle or ironblood after current flagship has reached level 32+ (Only CN players'0 limit break ship can reach level 100)\n\nThe vanguard's equipment is replaced when being switched out by first recording the current setup. Only populated equipment slots will be replaced.",
+      "help": "Change vanguard if flagship or vanguard are emotion exhausted. If you choose not to change, your fleet will ignore the low emotion warning and continue combat.\nSwitch out to new level 100(70) common vanguard from eagle or ironblood after current flagship has reached level 32+ (Only CN players'0 limit break ship can reach level 100)",
       "disabled": "Don't Change",
       "ship": "Change Ship"
     },
@@ -2857,58 +2858,58 @@
   },
   "GGHandler": {
     "_info": {
-      "name": "GG Handler",
-      "help": ""
+      "name": "GGHandler._info.name",
+      "help": "GGHandler._info.help"
     },
     "Enabled": {
-      "name": "Enable GG handler",
-      "help": "Enable this when you use GameGuardian so Alas can recover from GG popups and keep the multiplier state aligned."
+      "name": "GGHandler.Enabled.name",
+      "help": "GGHandler.Enabled.help"
     },
     "RestartATX": {
-      "name": "Restart ATX and U2",
-      "help": "Restart ATX and UiAutomator2 before game restart. Useful on some emulators, unsafe on others."
+      "name": "GGHandler.RestartATX.name",
+      "help": "GGHandler.RestartATX.help"
     },
     "GGPackageName": {
-      "name": "GG package name",
-      "help": "The GameGuardian package name, usually a random com.* package under Android/data."
+      "name": "GGHandler.GGPackageName.name",
+      "help": "GGHandler.GGPackageName.help"
     },
     "AutoRestartGG": {
-      "name": "Auto enable multiplier",
-      "help": "Run the default GG multiplier script automatically before allowed tasks."
+      "name": "GGHandler.AutoRestartGG.name",
+      "help": "GGHandler.AutoRestartGG.help"
     },
     "RestartEverytime": {
-      "name": "Reset on Alas start",
-      "help": "Restart once before scheduled tasks so the GG state matches the configured state."
+      "name": "GGHandler.RestartEverytime.name",
+      "help": "GGHandler.RestartEverytime.help"
     },
     "GGMultiplyingFactor": {
-      "name": "Multiplier",
-      "help": "Default factor written into the GG script."
+      "name": "GGHandler.GGMultiplyingFactor.name",
+      "help": "GGHandler.GGMultiplyingFactor.help"
     },
     "DisabledTask": {
-      "name": "Tasks with GG disabled",
-      "help": "Recommended for sensitive tasks where multiplier use is risky.",
-      "disable_all_dangerous_task": "Disable risky tasks",
-      "disable_guild_and_dangerous": "Disable guild and risky tasks",
-      "disable_exercise": "Disable exercise only",
-      "enable_all": "Enable all"
+      "name": "GGHandler.DisabledTask.name",
+      "help": "GGHandler.DisabledTask.help",
+      "disable_all_dangerous_task": "disable_all_dangerous_task",
+      "disable_guild_and_dangerous": "disable_guild_and_dangerous",
+      "disable_exercise": "disable_exercise",
+      "enable_all": "enable_all"
     }
   },
   "PowerLimit": {
     "_info": {
-      "name": "Power limit",
-      "help": "Final safety check before risky battles. If fleet power looks too high, Alas will restart and re-apply GG handling."
+      "name": "PowerLimit._info.name",
+      "help": "PowerLimit._info.help"
     },
     "Exercise": {
-      "name": "Exercise",
-      "help": ""
+      "name": "PowerLimit.Exercise.name",
+      "help": "PowerLimit.Exercise.help"
     },
     "Raid": {
-      "name": "Raid",
-      "help": ""
+      "name": "PowerLimit.Raid.name",
+      "help": "PowerLimit.Raid.help"
     },
     "Ash": {
-      "name": "Ash beacon",
-      "help": ""
+      "name": "PowerLimit.Ash.name",
+      "help": "PowerLimit.Ash.help"
     }
   },
   "Storage": {
@@ -2935,8 +2936,8 @@
       "Stop": "Stop",
       "ScrollON": "Auto Scroll ON",
       "ScrollOFF": "Auto Scroll OFF",
-      "DashboardON": "Fold",
-      "DashboardOFF": "Expand",
+      "DashboardON": "Gui.Button.DashboardON",
+      "DashboardOFF": "Gui.Button.DashboardOFF",
       "ClearLog": "Clear Log",
       "Setting": "Setting",
       "CheckUpdate": "Check update",
@@ -2970,23 +2971,23 @@
     "Overview": {
       "Scheduler": "Scheduler",
       "Log": "Log",
-      "Dashboard": "Resources",
+      "Dashboard": "Gui.Overview.Dashboard",
       "Running": "Running",
       "Pending": "Pending",
       "Waiting": "Waiting",
       "NoTask": "No Task",
-      "Oil": "Oil",
-      "Coin": "Coins",
-      "Gem": "Gems",
-      "Pt": "Event PT",
-      "Cube": "Cubes",
-      "ActionPoint": "Action Points",
-      "YellowCoin": "OS Yellow Coins",
-      "PurpleCoin": "OS Purple Coins",
-      "Core": "Core Data",
-      "Medal": "Medals",
-      "Merit": "Merit",
-      "GuildCoin": "Guild Coins"
+      "Oil": "Gui.Overview.Oil",
+      "Coin": "Gui.Overview.Coin",
+      "Gem": "Gui.Overview.Gem",
+      "Pt": "Gui.Overview.Pt",
+      "Cube": "Gui.Overview.Cube",
+      "ActionPoint": "Gui.Overview.ActionPoint",
+      "YellowCoin": "Gui.Overview.YellowCoin",
+      "PurpleCoin": "Gui.Overview.PurpleCoin",
+      "Core": "Gui.Overview.Core",
+      "Medal": "Gui.Overview.Medal",
+      "Merit": "Gui.Overview.Merit",
+      "GuildCoin": "Gui.Overview.GuildCoin"
     },
     "AddAlas": {
       "PopupTitle": "Add new config",

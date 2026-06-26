@@ -89,6 +89,9 @@ class LoginHandler(UI):
                 continue
             if self.appear_then_click(LOGIN_RETURN_INFO, offset=(30, 30), interval=5):
                 continue
+            # 头像过期会挡住后续登录弹窗流程，先清掉再继续往主界面推进，避免卡在重复弹窗上。
+            if self.appear_then_click(AVATAR_EXPIRED, offset=(30, 30), interval=5):
+                continue
             # Popups
             if self.handle_popup_confirm('LOGIN'):
                 continue

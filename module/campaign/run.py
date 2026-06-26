@@ -211,6 +211,7 @@ class CampaignRun(CampaignEvent):
             'sp5': 't5',
             'sp6': 't6',
         }
+        # 这些目录共享 T 章命名规则；新增活动时要同时补到这里，避免章节别名解析落回旧写法。
         if folder in [
             'event_20211125_cn',
             'event_20231026_cn',
@@ -220,6 +221,7 @@ class CampaignRun(CampaignEvent):
             'event_20250814_cn',
             'event_20251023_cn',
             'event_20260326_cn',
+            'event_20260625_cn',
             'war_archives_20230525_cn',
             'war_archives_20231026_cn',
             'war_archives_20240725_cn',
@@ -240,6 +242,7 @@ class CampaignRun(CampaignEvent):
             'd2': 'ht5',
             'd3': 'ht6',
         }
+        # 这里同样要覆盖 T/HT 的历史复用目录；只改上一处会导致部分活动章节恢复成错误别名。
         if folder in [
             'event_20200917_cn',
             'event_20221124_cn',
@@ -258,6 +261,7 @@ class CampaignRun(CampaignEvent):
             'event_20250814_cn',
             'event_20251023_cn',
             'event_20260326_cn',
+            'event_20260625_cn',
             'war_archives_20230525_cn',
             'war_archives_20231026_cn',
             'war_archives_20240725_cn',
