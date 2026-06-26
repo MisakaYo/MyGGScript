@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$OutputDir = "",
     [string]$Version = "",
     [string]$Repository = "https://github.com/MisakaYo/MyGGScript",
@@ -171,11 +171,9 @@ function Disable-GitCredentialSelector {
         return
     }
 
-    # 发布包面向公开仓库更新场景，不需要 Git for Windows 的凭据选择器弹窗。
-    # 这里直接把 helper-selector 改成空 helper，避免朋友首次启动时被额外交互打断。
-    $content = Get-Content -Path $gitConfigPath -Raw
-    $content = [regex]::Replace($content, '(?m)^(\s*helper\s*=\s*)helper-selector\s*$', '${1}')
-    Set-Content -Path $gitConfigPath -Value $content -Encoding ASCII
+    # 鍙戝竷鍖呴潰鍚戝叕寮€浠撳簱鏇存柊鍦烘櫙锛屼笉闇€瑕?Git for Windows 鐨勫嚟鎹€夋嫨鍣ㄥ脊绐椼€?    # 杩欓噷鐩存帴鎶?helper-selector 鏀规垚绌?helper锛岄伩鍏嶆湅鍙嬮娆″惎鍔ㄦ椂琚澶栦氦浜掓墦鏂€?    $gitConfigContent = Get-Content -Path $gitConfigPath -Raw
+    $gitConfigContent = [regex]::Replace($gitConfigContent, '(?m)^(\s*helper\s*=\s*)helper-selector\s*$', '${1}')
+    Set-Content -Path $gitConfigPath -Value $gitConfigContent -Encoding ASCII
 }
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -234,8 +232,7 @@ try {
 
     Write-Section "Copying official-style release shell"
     Copy-ReleaseShell -BootstrapRoot $BootstrapDir -PackageRoot $packageRoot
-    Disable-GitCredentialSelector -PackageRoot $packageRoot
-
+# Disable-GitCredentialSelector -PackageRoot $packageRoot
     Write-Section "Overlaying MyGG deploy layer"
     Sync-Directory -SourcePath (Join-Path $repoRoot "deploy") -DestinationPath (Join-Path $packageRoot "deploy")
     foreach ($readmeName in @("README.md", "README_en.md", "README_jp.md")) {
@@ -261,8 +258,7 @@ try {
     Write-Section "Generating config/deploy.yaml"
     New-DeployConfig -TemplatePath $templatePath -DestinationPath (Join-Path $configDir "deploy.yaml") -RepositoryUrl $Repository -BranchName $Branch
 
-    # 官方 release 解压后会先落到 AzurLaneAutoScript 目录下，这里复刻同样的目录层级。
-    Write-Section "Preparing official-style archive root"
+    # 瀹樻柟 release 瑙ｅ帇鍚庝細鍏堣惤鍒?AzurLaneAutoScript 鐩綍涓嬶紝杩欓噷澶嶅埢鍚屾牱鐨勭洰褰曞眰绾с€?    Write-Section "Preparing official-style archive root"
     Sync-Directory -SourcePath $packageRoot -DestinationPath $archiveContentRoot
 
     $sevenZip = Try-ResolveSevenZip
@@ -316,3 +312,4 @@ finally {
         Remove-Item -Path $tempRoot -Recurse -Force
     }
 }
+

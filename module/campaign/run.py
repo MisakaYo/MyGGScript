@@ -170,7 +170,7 @@ class CampaignRun(CampaignEvent):
                 logger.info(f'Stage name {name} is from campaign_main')
                 folder = 'campaign_main'
             else:
-                folder = self.config.cross_get('Event.Campaign.Event')
+                folder = self.config.cross_get('GemsFarming.Campaign.Event')
                 if folder is not None:
                     logger.info(f'Stage name {name} is from event {folder}')
                 else:
@@ -211,6 +211,7 @@ class CampaignRun(CampaignEvent):
             'sp5': 't5',
             'sp6': 't6',
         }
+        # 这些目录共享 T 章命名规则；新增活动时要同时补到这里，避免章节别名解析落回旧写法。
         if folder in [
             'event_20211125_cn',
             'event_20231026_cn',
@@ -220,7 +221,10 @@ class CampaignRun(CampaignEvent):
             'event_20250814_cn',
             'event_20251023_cn',
             'event_20260326_cn',
+            'event_20260625_cn',
+            'war_archives_20230525_cn',
             'war_archives_20231026_cn',
+            'war_archives_20240725_cn',
         ]:
             name = convert.get(name, name)
         # Convert between A/B/C/D and T/HT
@@ -238,6 +242,7 @@ class CampaignRun(CampaignEvent):
             'd2': 'ht5',
             'd3': 'ht6',
         }
+        # 这里同样要覆盖 T/HT 的历史复用目录；只改上一处会导致部分活动章节恢复成错误别名。
         if folder in [
             'event_20200917_cn',
             'event_20221124_cn',
@@ -256,7 +261,10 @@ class CampaignRun(CampaignEvent):
             'event_20250814_cn',
             'event_20251023_cn',
             'event_20260326_cn',
+            'event_20260625_cn',
+            'war_archives_20230525_cn',
             'war_archives_20231026_cn',
+            'war_archives_20240725_cn',
         ]:
             name = convert.get(name, name)
         else:
@@ -330,6 +338,9 @@ class CampaignRun(CampaignEvent):
                 logger.info(
                     'In event_20240912_cn, MapAchievement=threat_safe_without_3_stars fallback to 100_percent_clear')
                 self.config.override(StopCondition_MapAchievement='100_percent_clear')
+        if folder == 'event_20260417_cn':
+            if name in ['vsp', ]:
+                name = 'sp'
         return name, folder
 
     def can_use_auto_search_continue(self):
@@ -421,10 +432,6 @@ class CampaignRun(CampaignEvent):
             if self.triggered_stop_condition(oil_check=not self.campaign.is_in_auto_search_menu()):
                 break
 
-            if self.config.modified:
-                logger.info('Updating config for dashboard')
-                self.config.update()
-
             # Run
             self.device.stuck_record_clear()
             self.device.click_record_clear()
@@ -434,10 +441,6 @@ class CampaignRun(CampaignEvent):
                 logger.hr('Script end')
                 logger.info(str(e))
                 break
-
-            if self.campaign.config.modified:
-                logger.info('Updating config for dashboard')
-                self.campaign.config.update()
 
             # After run
             self.run_count += 1
