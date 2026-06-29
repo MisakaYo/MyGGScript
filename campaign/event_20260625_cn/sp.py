@@ -57,7 +57,8 @@ A10, B10, C10, D10, E10, F10, G10, \
 
 class Config:
     # ===== Start of generated config =====
-    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Studying', 'MeowfficerBust_Playtime']
+    # SP 图同样改用现有的 Hobbies 模板，避免发布包里缺少原始文件导致活动任务直接失败。
+    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Hobbies']
     MOVABLE_ENEMY_TURN = (2,)
     MAP_HAS_SIREN = True
     MAP_HAS_MOVABLE_ENEMY = True

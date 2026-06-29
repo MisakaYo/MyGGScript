@@ -46,7 +46,8 @@ A7, B7, C7, D7, E7, F7, G7, H7, I7, \
 
 class Config:
     # ===== Start of generated config =====
-    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Studying', 'MeowfficerBust_Playtime']
+    # 这次活动包里只有 Hobbies 这张可用模板，改成共享资源后就不会因为缺失 Studying/Playtime 直接中断。
+    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Hobbies']
     MOVABLE_ENEMY_TURN = (2,)
     MAP_HAS_SIREN = True
     MAP_HAS_MOVABLE_ENEMY = True

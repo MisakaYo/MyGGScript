@@ -51,7 +51,8 @@ A8, B8, C8, D8, E8, F8, G8, H8, I8, \
 
 class Config(ConfigBase):
     # ===== Start of generated config =====
-    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Studying', 'MeowfficerBust_Playtime']
+    # 这组关卡复用同一张 Hobbies 立绘即可工作，优先保证资源存在而不是保留缺失引用。
+    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Hobbies']
     MOVABLE_ENEMY_TURN = (2,)
     MAP_HAS_SIREN = True
     MAP_HAS_MOVABLE_ENEMY = True

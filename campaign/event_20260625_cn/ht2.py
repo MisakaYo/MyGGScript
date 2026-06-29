@@ -48,7 +48,8 @@ A7, B7, C7, D7, E7, F7, G7, H7, I7, \
 
 class Config(ConfigBase):
     # ===== Start of generated config =====
-    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Studying', 'MeowfficerBust_Playtime']
+    # 这里沿用可用的 Hobbies 模板，避免用户包里没有 Studying/Playtime 图片时在进图阶段报错。
+    MAP_SIREN_TEMPLATE = ['MeowfficerBust_Hobbies']
     MOVABLE_ENEMY_TURN = (2,)
     MAP_HAS_SIREN = True
     MAP_HAS_MOVABLE_ENEMY = True
