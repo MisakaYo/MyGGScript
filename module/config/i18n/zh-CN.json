@@ -2858,40 +2858,40 @@
   },
   "GGHandler": {
     "_info": {
-      "name": "GGHandler._info.name",
-      "help": "GGHandler._info.help"
+      "name": "GG 处理器",
+      "help": ""
     },
     "Enabled": {
-      "name": "GGHandler.Enabled.name",
-      "help": "GGHandler.Enabled.help"
+      "name": "启用 GG 处理",
+      "help": "启用后会在使用 GameGuardian 时自动处理 GG 弹窗，并保持倍率状态一致。"
     },
     "RestartATX": {
-      "name": "GGHandler.RestartATX.name",
-      "help": "GGHandler.RestartATX.help"
+      "name": "重启 ATX 与 U2",
+      "help": "在重启游戏前先重启 ATX 与 UiAutomator2。某些模拟器可用，某些情况下可能不安全。"
     },
     "GGPackageName": {
-      "name": "GGHandler.GGPackageName.name",
-      "help": "GGHandler.GGPackageName.help"
+      "name": "GG 套件名称",
+      "help": "GameGuardian 的套件名称，通常是 Android/data 底下的随机 com.* 套件。"
     },
     "AutoRestartGG": {
-      "name": "GGHandler.AutoRestartGG.name",
-      "help": "GGHandler.AutoRestartGG.help"
+      "name": "自动启用倍率",
+      "help": "在允许的任务开始前，自动执行默认的 GG 倍率脚本。"
     },
     "RestartEverytime": {
-      "name": "GGHandler.RestartEverytime.name",
-      "help": "GGHandler.RestartEverytime.help"
+      "name": "启动 Alas 时重置",
+      "help": "在排程任务前重启一次，让 GG 状态与配置保持一致。"
     },
     "GGMultiplyingFactor": {
-      "name": "GGHandler.GGMultiplyingFactor.name",
-      "help": "GGHandler.GGMultiplyingFactor.help"
+      "name": "倍率",
+      "help": "写入 GG 脚本中的默认倍率。"
     },
     "DisabledTask": {
-      "name": "GGHandler.DisabledTask.name",
-      "help": "GGHandler.DisabledTask.help",
-      "disable_all_dangerous_task": "disable_all_dangerous_task",
-      "disable_guild_and_dangerous": "disable_guild_and_dangerous",
-      "disable_exercise": "disable_exercise",
-      "enable_all": "enable_all"
+      "name": "GG 停用任务",
+      "help": "建议用于倍率操作风险较高的敏感任务。",
+      "disable_all_dangerous_task": "停用所有高风险任务",
+      "disable_guild_and_dangerous": "停用公会与高风险任务",
+      "disable_exercise": "仅停用演习",
+      "enable_all": "全部启用"
     }
   },
   "PowerLimit": {
