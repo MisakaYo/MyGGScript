@@ -43,6 +43,7 @@ import module.webui.lang as lang
 from module.config.config import AzurLaneConfig, Function
 from module.config.deep import deep_get, deep_iter, deep_set
 from module.config.env import IS_ON_PHONE_CLOUD
+from module.config.server import to_server
 from module.config.utils import (
     alas_instance,
     alas_template,
@@ -314,6 +315,7 @@ class AlasGUI(Frame):
     @use_scope("groups")
     def set_group(self, group, arg_dict, config, task):
         group_name = group[0]
+        server = to_server(deep_get(config, "Alas.Emulator.PackageName", "cn"))
 
         output_list: List[Output] = []
         for arg, arg_dict in deep_iter(arg_dict, depth=1):
@@ -344,7 +346,23 @@ class AlasGUI(Frame):
             # Default value
             output_kwargs["value"] = value
             # Options
-            output_kwargs["options"] = options = output_kwargs.pop("option", [])
+            options = output_kwargs.pop("option", [])
+            server_options = output_kwargs.get(f"option_{server}")
+            if output_kwargs["widget_type"] == "select" and isinstance(server_options, list) and server_options:
+                options = server_options
+            output_kwargs["options"] = options
+            if (
+                task == "GemsFarming"
+                and group_name == "Campaign"
+                and arg_name == "Event"
+                and output_kwargs["widget_type"] == "select"
+                and len(options) == 1
+            ):
+                continue
+            if output_kwargs["widget_type"] == "select" and len(options) == 1:
+                only_option = options[0]
+                if only_option in output_kwargs.get("option_bold", []):
+                    output_kwargs["widget_type"] = "state"
             # Options label
             options_label = []
             for opt in options:
@@ -397,8 +415,7 @@ class AlasGUI(Frame):
         self.init_menu(name="Overview")
         self.set_title(t(f"Gui.MenuAlas.Overview"))
 
-        # Overview 改为“顶部资源面板 + 底部调度/日志双栏”，
-        # 避免 Dashboard 挂在日志容器内部时挤压滚动区，导致日志区域高度异常。
+        # 总览页拆成“资源面板 + 调度/日志主区”，避免资源卡片直接挤占日志滚动容器高度。
         put_scope(
             "overview",
             [
@@ -455,6 +472,7 @@ class AlasGUI(Frame):
 
         log = RichLog("log")
         self._log = log
+        # Dashboard 分组来源统一从配置定义读取，避免前端硬编码资源项顺序后与配置生成结果脱节。
         self._log.dashboard_arg_group = LogRes(self.alas_config).groups
 
         with use_scope("logs"):
@@ -507,6 +525,18 @@ class AlasGUI(Frame):
         self.task_handler.add(log.put_log(self.alas), 0.25, True)
 
     def set_dashboard_display(self, b: bool) -> None:
+        """
+        切换资源面板展示状态。
+
+        Args:
+            b: `True` 表示展开全部资源卡片，`False` 表示只展示精简视图。
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
         self._log.set_dashboard_display(b)
         self.alas_update_dashboard()
 
@@ -650,28 +680,40 @@ class AlasGUI(Frame):
                 put_text(t("Gui.Overview.NoTask")).style("--overview-notask-text--")
 
     def _render_dashboard_group(self, group_name: str) -> None:
-        group = deep_get(self.alas_config.data, keys=f'Dashboard.{group_name}', default=None)
+        """
+        渲染单个资源卡片。
+
+        Args:
+            group_name: Dashboard 分组名，例如 `Oil`、`Pt`。
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
+        group = deep_get(self.alas_config.data, keys=f"Dashboard.{group_name}", default=None)
         if not group:
             return
 
-        value = group.get('Value', 0)
-        suffix = ''
-        if group.get('Limit'):
+        value = group.get("Value", 0)
+        suffix = ""
+        if group.get("Limit"):
             suffix = f' / {group["Limit"]}'
-        elif group.get('Total'):
+        elif group.get("Total"):
             suffix = f' / {group["Total"]}'
-        elif group_name == 'Pt':
-            pt_limit = deep_get(self.alas_config.data, keys='EventGeneral.EventGeneral.PtLimit', default=0)
+        elif group_name == "Pt":
+            pt_limit = deep_get(self.alas_config.data, keys="EventGeneral.EventGeneral.PtLimit", default=0)
             if pt_limit:
-                suffix = f' / {pt_limit}'
+                suffix = f" / {pt_limit}"
 
-        subtitle = t(f'Gui.Overview.{group_name}')
-        record = group.get('Record')
-        if hasattr(record, 'strftime') and record.year > 2020:
-            subtitle = f'{subtitle} | {record:%m-%d %H:%M}'
+        subtitle = t(f"Gui.Overview.{group_name}")
+        record = group.get("Record")
+        if hasattr(record, "strftime") and record.year > 2020:
+            subtitle = f"{subtitle} | {record:%m-%d %H:%M}"
 
-        color = str(group.get('Color', '^808080')).replace('^', '#')
-        with use_scope(f'dashboard_{group_name}', clear=True):
+        color = str(group.get("Color", "^808080")).replace("^", "#")
+        with use_scope(f"dashboard_{group_name}", clear=True):
             put_row(
                 [
                     put_html(f'<div class="status-point" style="background-color:{color};"></div>'),
@@ -679,31 +721,45 @@ class AlasGUI(Frame):
                         [
                             put_row(
                                 [
-                                    put_text(str(value)).style('--dashboard-value--'),
-                                    put_text(suffix).style('--dashboard-limit--'),
+                                    put_text(str(value)).style("--dashboard-value--"),
+                                    put_text(suffix).style("--dashboard-limit--"),
                                 ],
-                                size='auto auto',
+                                size="auto auto",
                             ),
-                            put_text(subtitle).style('--dashboard-help--'),
+                            put_text(subtitle).style("--dashboard-help--"),
                         ],
-                        size='auto auto',
+                        size="auto auto",
                     ),
                 ],
-                size='20px 1fr',
+                size="20px 1fr",
             )
 
     def alas_update_dashboard(self) -> None:
+        """
+        刷新资源面板。
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
         if not self.visible or self._log is None:
             return
 
         groups = self._log.dashboard_arg_group or []
+        # 折叠时至少保留第一行资源卡片，而不是完全收起内容。
+        # 这里固定保留前四项，能让桌面端继续看到一行核心资源，同时避免面板重新变回整块占高布局。
         if not self._log.display_dashboard:
             groups = groups[:4]
 
         with use_scope("dashboard", clear=True):
+            put_text(t("Gui.Overview.Dashboard")).style("font-size: 1rem; margin: 0 0 .4rem .1rem;")
             if not groups:
                 return
-            put_text(t("Gui.Overview.Dashboard")).style("font-size: 1rem; margin: 0 0 .4rem .1rem;")
             put_scope("dashboard_grid")
 
         with use_scope("dashboard_grid", clear=True):
@@ -892,9 +948,7 @@ class AlasGUI(Frame):
                 )
             with use_scope("updater_detail", clear=True):
                 put_text(t("Gui.Update.DetailedHistory"))
-                # 详细历史这里只展示最近少量提交。
-                # 这样既能保留更新参考价值，也能避免把更早的历史作者信息继续暴露在更新器里。
-                # 副作用是用户一次能看到的提交更少，但对日常更新判断已经足够。
+                # 详细历史这里只展示最近少量提交，避免更新弹窗被长列表撑爆，同时减少无关旧作者信息暴露。
                 history = updater.get_commit(
                     f"origin/{updater.Branch}", n=5, short_sha1=True
                 )
@@ -1241,7 +1295,7 @@ class AlasGUI(Frame):
                 """
             Alas is a free open source software, if you paid for Alas from any channel, please refund.
             Alas 是一款免费开源软件，如果你在任何渠道付费购买了Alas，请退款。
-            Project repository 项目地址：`https://github.com/MisakaYo/MyGGScript`
+            Project repository 项目地址：`https://github.com/LmeSzinc/AzurLaneAutoScript`
             """
             ).style("text-align: center")
 

@@ -14,8 +14,8 @@ class ExecutionError(Exception):
 
 class ConfigModel:
     # Git
-    Repository: str = "https://github.com/MisakaYo/MyGGScript"
-    Branch: str = "main"
+    Repository: str = "https://github.com/LmeSzinc/AzurLaneAutoScript"
+    Branch: str = "master"
     GitExecutable: str = "./toolkit/Git/mingw64/bin/git.exe"
     GitProxy: Optional[str] = None
     SSLVerify: bool = False
@@ -115,22 +115,11 @@ class DeployConfig(ConfigModel):
         """
         Redirect deploy config, must be called after each `read()`
         """
-        repository = 'https://github.com/MisakaYo/MyGGScript'
-        if self.Repository in [
-            'https://github.com/LmeSzinc/AzurLaneAutoScript',
-            'git://git.lyoko.io/AzurLaneAutoScript',
-            'global',
-            'cn',
-        ]:
-            self.Repository = repository
-            self.config['Repository'] = repository
-        if self.Repository == repository and self.Branch == 'master':
-            self.Branch = 'main'
-            self.config['Branch'] = 'main'
-
         # Bypass webui.config.DeployConfig.__setattr__()
         # Don't write these into deploy.yaml
-        super().__setattr__('GitOverCdn', False)
+        super().__setattr__('GitOverCdn', self.Repository in ['cn'])
+        if self.Repository in ['global', 'cn']:
+            super().__setattr__('Repository', 'https://github.com/LmeSzinc/StarRailCopilot')
 
     def filepath(self, path):
         """

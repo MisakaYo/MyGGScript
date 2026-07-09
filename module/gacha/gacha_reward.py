@@ -126,6 +126,7 @@ class RewardGacha(GachaUI, Retirement):
         logger.info(f'Able to submit up to {target_count} build orders')
         self.build_coin_count -= gold_total
         self.build_cube_count -= cube_total
+        # 抽卡会直接消耗魔方，提交建造后马上同步剩余值，避免资源面板滞后。
         LogRes(self.config).Cube = self.build_cube_count
         self.config.update()
         return target_count
@@ -237,6 +238,8 @@ class RewardGacha(GachaUI, Retirement):
             if self.appear(GET_SHIP, interval=1):
                 self.device.click(STORY_SKIP)  # Fast forward for multiple orders
                 confirm_timer.reset()
+                continue
+            if self.handle_get_items_ship():
                 continue
 
             if self.appear(BUILD_FINISH_RESULTS, offset=(20, 150), interval=3):

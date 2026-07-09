@@ -139,6 +139,7 @@ class ActionPointHandler(UI, MapEventHandler):
         oil = box[0]
 
         logger.info(f'Action points: {current}({total}), oil: {oil}')
+        # 行动点和油量是同一屏读出来的，放在这里一起更新能避免前端看到跨页面不同步的状态。
         LogRes(self.config).Oil = oil
         LogRes(self.config).ActionPoint = {'Value': current, 'Total': total}
         self.config.update()

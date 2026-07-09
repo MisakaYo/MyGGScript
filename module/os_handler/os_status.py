@@ -78,6 +78,7 @@ class OSStatus(UI):
             else:
                 break
 
+        # 黄币只在商店/OS 相关页面稳定可读，这里成功读出后就同步到资源面板。
         LogRes(self.config).YellowCoin = yellow_coins
         return yellow_coins
 
@@ -92,6 +93,7 @@ class OSStatus(UI):
     def os_shop_get_coins(self):
         self._shop_yellow_coins = self.get_yellow_coins()
         self._shop_purple_coins = self.get_purple_coins()
+        # 两类币种可能在同一轮采集中同时变化，这里统一落盘，避免只写一半导致时间戳不一致。
         if self.config.modified:
             self.config.update()
         logger.info(f'Yellow coins: {self._shop_yellow_coins}, purple coins: {self._shop_purple_coins}')

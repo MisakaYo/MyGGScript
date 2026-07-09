@@ -74,6 +74,7 @@ class Coalition(CoalitionCombat, CampaignEvent):
         else:
             logger.warning('Wait PT timeout, assume it is')
 
+        # 联动战 PT 只在这里能稳定拿到，回写后立刻持久化，避免任务切换时丢掉本轮进度。
         LogRes(self.config).Pt = pt
         self.config.update()
         return pt

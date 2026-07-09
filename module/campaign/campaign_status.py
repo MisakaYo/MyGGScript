@@ -55,6 +55,7 @@ class CampaignStatus(UI):
         if res:
             pt = int(res.group(1))
             logger.attr('Event_PT', pt)
+            # 这里把活动 PT 回写到 Dashboard，便于总览页展示最近一次读数。
             LogRes(self.config).Pt = pt
             return pt
         else:
@@ -82,6 +83,7 @@ class CampaignStatus(UI):
             if amount >= 100:
                 break
 
+        # 金币读数在多处任务都会用到，这里集中回写可以减少调用方重复同步逻辑。
         LogRes(self.config).Coin = amount
         return amount
 
@@ -130,6 +132,7 @@ class CampaignStatus(UI):
             if amount >= 100:
                 break
 
+        # 油量属于总览资源面板的核心指标，这里在 OCR 后就地同步。
         LogRes(self.config).Oil = amount
         return amount
 

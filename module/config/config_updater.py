@@ -183,6 +183,7 @@ class ConfigGenerator:
                     continue
                 deep_set(data, keys=[task, group], value=deepcopy(self.argument[group]))
 
+        # Dashboard 不属于常规任务配置，但需要和 args/template 走同一套生成流程。
         for dashboard, groups in self.dashboard.items():
             for group in groups:
                 if group not in self.argument:
@@ -488,6 +489,7 @@ class ConfigGenerator:
     @staticmethod
     def generate_deploy_template():
         template = poor_yaml_read(DEPLOY_TEMPLATE)
+        # 便携发布和一键部署都应默认指向当前维护仓库，避免安装后又被拉回上游原仓库。
         repository = 'https://github.com/MisakaYo/MyGGScript'
         cn = {
             'Repository': repository,
@@ -663,22 +665,24 @@ class ConfigUpdater:
         if not is_template:
             for task in EVENTS + RAIDS + COALITIONS:
                 opts = deep_get(self.args, keys=f'{task}.Campaign.Event.option_{server}', default=[])
-                if not deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') in opts:
+                if opts and not deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') in opts:
                     deep_set(new,
                              keys=f'{task}.Campaign.Event',
                              value=opts[0])
 
             for task in ['GemsFarming']:
-                if deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') != 'campaign_main':
+                opts = deep_get(self.args, keys=f'{task}.Campaign.Event.option_{server}', default=[])
+                if opts and deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') not in opts:
                     deep_set(new,
                              keys=f'{task}.Campaign.Event',
-                             value=deep_get(self.args, f'{task}.Campaign.Event.option_{server}')[0])
+                             value=opts[0])
         # War archive does not allow campaign_main
         for task in WAR_ARCHIVES:
-            if deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') == 'campaign_main':
+            opts = deep_get(self.args, keys=f'{task}.Campaign.Event.option_{server}', default=[])
+            if opts and deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') == 'campaign_main':
                 deep_set(new,
                          keys=f'{task}.Campaign.Event',
-                         value=deep_get(self.args, f'{task}.Campaign.Event.option_{server}')[0])
+                         value=opts[0])
 
         # Events does not allow default stage 12-4
         def default_stage(t, stage):

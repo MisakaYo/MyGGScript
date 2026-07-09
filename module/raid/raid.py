@@ -250,6 +250,7 @@ class Raid(MapOperation, RaidCombat, CampaignEvent):
             fleet_index (int):
         """
         logger.info('Combat preparation.')
+        # Raid 属于高风险倍率场景，战斗准备阶段先做一次战力保护检查。
         from module.gg_handler.gg_handler import GGHandler
 
         GGHandler(config=self.config, device=self.device).power_limit('Raid')
@@ -397,6 +398,7 @@ class Raid(MapOperation, RaidCombat, CampaignEvent):
                 pt = ocr.ocr(self.device.image)
                 if timeout.reached():
                     logger.warning('Wait PT timeout, assume it is')
+                    # 即使超时也保留最后一次 OCR 结果，避免总览页完全空白。
                     LogRes(self.config).Pt = pt
                     self.config.update()
                     return pt

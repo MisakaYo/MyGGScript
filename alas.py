@@ -518,6 +518,7 @@ class AzurLaneAutoScript:
     def loop(self):
         logger.set_file_logger(self.config_name)
         logger.info(f'Start scheduler loop: {self.config_name}')
+        # 这里在调度器主循环启动前先同步一次 GG 状态，避免首次任务执行前沿用上次异常退出留下的倍率状态。
         self.checker.wait_until_available()
         GGHandler(config=self.config, device=self.device).handle_restart_before_tasks()
         check_fail = 0
@@ -551,6 +552,8 @@ class AzurLaneAutoScript:
                 del_cached_property(self, 'config')
                 continue
 
+            # 每次进入具体任务前都重新校验 GG 配置与当前任务是否允许开启倍率。
+            # 连续失败超过阈值后直接通知接管，避免设备反复卡死在同一故障点。
             GGHandler(config=self.config, device=self.device).check_config()
             try:
                 GGHandler(config=self.config, device=self.device).check_then_set_gg_status(inflection.underscore(task))

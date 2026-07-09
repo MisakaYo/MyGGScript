@@ -18,8 +18,8 @@ def timeout(func, timeout_sec=30.0, *args, **kwargs):
         bool: ``True`` 表示等待超时，``False`` 表示在时限内完成。
 
     Notes:
-        这里故意不强杀超时线程，只保留旧 GG 流程依赖的“检测是否卡住”语义，
-        这样能兼容旧版 gg_handler 的调用约定，同时避免为了迁移而改动多处业务链路。
+        这里故意不强杀超时线程，只保留 GG 链路依赖的“检测是否卡住”语义，
+        这样能兼容旧流程的调用约定，避免为了迁移而改动多处业务链路。
     """
     from module.logger import logger
 
@@ -36,7 +36,7 @@ def timeout(func, timeout_sec=30.0, *args, **kwargs):
             None
 
         Raises:
-            None: 子线程异常先缓存再回抛，避免 GG 链路在主日志里被误判为“正常完成”。
+            None: 子线程异常先缓存再回抛，避免主流程把失败误判成正常完成。
         """
         try:
             func(*args, **kwargs)

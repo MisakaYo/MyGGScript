@@ -8,7 +8,7 @@ from uiautomator2.xpath import XPath, XPathSelector
 
 import module.config.server as server
 from module.base.timer import Timer
-from module.base.utils import color_similarity_2d, crop, random_rectangle_point
+from module.base.utils import color_similarity_2d, crop
 from module.gg_handler.gg_handler import GGHandler
 from module.handler.assets import *
 from module.logger import logger
@@ -31,6 +31,7 @@ class LoginHandler(UI):
             GameNotRunningError:
         """
         logger.hr('App login')
+        # 登录前先处理 GG 遗留状态，避免残留弹窗挡住正常登录链路。
         GGHandler(config=self.config, device=self.device).handle_restart()
 
         confirm_timer = Timer(1.5, count=4).start()
@@ -111,26 +112,29 @@ class LoginHandler(UI):
         if not self._user_agreement_timer.reached():
             return False
 
-        confirm = self.image_color_button(
+        right = self.image_color_button(
             area=(640, 360, 1280, 720), color=(78, 189, 234),
             color_threshold=245, encourage=25, name='AGREEMENT_CONFIRM')
-        if confirm is None:
+        if right is None:
             return False
-        scroll = self.image_color_button(
-            area=(640, 0, 1280, 720), color=(182, 189, 202),
-            color_threshold=245, encourage=5, name='AGREEMENT_SCROLL'
-        )
-        if scroll is not None:
+        # 2026.04.17 No scroll anymore, just bare swipe before clicking confirm
+        # if having blue button at right half of screen, but missing in left, it's a confirm button
+        # if having both, it's a blue button at middle confirming login
+        left = self.image_color_button(
+            area=(0, 360, 640, 720), color=(78, 189, 234),
+            color_threshold=245, encourage=25, name='AGREEMENT_CONFIRM')
+        if left is None:
             # User agreement
-            p1 = random_rectangle_point(scroll.button)
-            p2 = random_rectangle_point(scroll.move((0, 350)).button)
-            self.device.swipe(p1, p2, name='AGREEMENT_SCROLL')
-            self.device.click(confirm)
+            # just somewhere at the middle
+            box = (350, 230, 920, 430)
+            self.device.swipe_vector((0, -150), box, name='AGREEMENT_SCROLL')
+            self.device.swipe_vector((0, -150), box, name='AGREEMENT_SCROLL')
+            self.device.click(right)
             self._user_agreement_timer.reset()
             return True
         else:
             # User login
-            self.device.click(confirm)
+            self.device.click(right)
             self._user_agreement_timer.reset()
             return True
 
@@ -163,6 +167,7 @@ class LoginHandler(UI):
 
     def app_restart(self):
         logger.hr('App restart')
+        # 部分设备的 uiautomator2 会在 GG 频繁切前后台后失联，这里按配置决定是否先重置 ATX。
         GGHandler(config=self.config, device=self.device).handle_u2_restart()
         self.device.app_stop()
         self.device.app_start()

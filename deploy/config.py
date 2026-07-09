@@ -11,8 +11,8 @@ class ExecutionError(Exception):
 
 class ConfigModel:
     # Git
-    Repository: str = "https://github.com/MisakaYo/MyGGScript"
-    Branch: str = "main"
+    Repository: str = "https://github.com/LmeSzinc/AzurLaneAutoScript"
+    Branch: str = "master"
     GitExecutable: str = "./toolkit/Git/mingw64/bin/git.exe"
     GitProxy: Optional[str] = None
     SSLVerify: bool = False
@@ -115,23 +115,15 @@ class DeployConfig(ConfigModel):
         """
         Redirect deploy config, must be called after each `read()`
         """
-        repository = 'https://github.com/MisakaYo/MyGGScript'
         if self.Repository in [
-            'https://github.com/LmeSzinc/AzurLaneAutoScript',
-            'git://git.lyoko.io/AzurLaneAutoScript',
             'https://gitee.com/LmeSzinc/AzurLaneAutoScript',
             'https://gitee.com/lmeszinc/azur-lane-auto-script-mirror',
             'https://e.coding.net/llop18870/alas/AzurLaneAutoScript.git',
             'https://e.coding.net/saarcenter/alas/AzurLaneAutoScript.git',
             'https://git.saarcenter.com/LmeSzinc/AzurLaneAutoScript.git',
-            'global',
-            'cn',
         ]:
-            self.Repository = repository
-            self.config['Repository'] = repository
-        if self.Repository == repository and self.Branch == 'master':
-            self.Branch = 'main'
-            self.config['Branch'] = 'main'
+            self.Repository = 'git://git.lyoko.io/AzurLaneAutoScript'
+            self.config['Repository'] = 'git://git.lyoko.io/AzurLaneAutoScript'
         if self.PypiMirror in [
             'https://pypi.tuna.tsinghua.edu.cn/simple'
         ]:
@@ -142,8 +134,12 @@ class DeployConfig(ConfigModel):
         # Don't write these into deploy.yaml
         super().__setattr__(
             'GitOverCdn',
-            False
+            self.Repository == 'git://git.lyoko.io/AzurLaneAutoScript' and self.Branch == 'master'
         )
+        if self.Repository in ['global']:
+            super().__setattr__('Repository', 'https://github.com/LmeSzinc/AzurLaneAutoScript')
+        if self.Repository in ['cn']:
+            super().__setattr__('Repository', 'git://git.lyoko.io/AzurLaneAutoScript')
 
     def filepath(self, key):
         """
