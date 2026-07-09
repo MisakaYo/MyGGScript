@@ -6722,13 +6722,11 @@
   "Research": {
     "Scheduler": {
       "Enable": {
-        "type": "lock",
-        "value": true,
+        "type": "checkbox",
+        "value": false,
         "option": [
-          true
-        ],
-        "option_bold": [
-          true
+          true,
+          false
         ]
       },
       "NextRun": {
