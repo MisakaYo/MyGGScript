@@ -35,7 +35,7 @@ Tactical:
     Enable: true
 Research:
   Scheduler:
-    Enable: true
+    Enable: false
 Dorm:
   Scheduler:
     Enable: true

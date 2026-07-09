@@ -286,7 +286,7 @@
     },
     "Enable": {
       "name": "Enable Task",
-      "help": "Join this task to scheduler.\nTask commission, research, reward are force to enable.",
+      "help": "Join this task to scheduler.\nCommission and reward are forced on, while research can now be disabled.",
       "True": "Enabled",
       "False": "False"
     },

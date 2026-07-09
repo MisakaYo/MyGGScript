@@ -275,16 +275,6 @@ Tactical:
     SuccessInterval: 30-60
     FailureInterval: 120-240
     ServerUpdate: 00:00
-Research:
-  Scheduler:
-    Enable:
-      type: lock
-      value: true
-      option: [ true, ]
-      option_bold: [ true, ]
-    SuccessInterval: 30-60
-    FailureInterval: 30-60
-    ServerUpdate: 00:00
 Dorm:
   Scheduler:
     SuccessInterval: 278
