@@ -520,7 +520,8 @@ pre.rich-traceback-code {
 }
 
 .bs-title-option,
-.form-check-input[id*="ch_S"] {
+/* 这里只隐藏 PyWebIO 内部生成的临时复选框，避免误伤 Research_Scheduler_Enable 这类正常配置项。 */
+.form-check-input[id^="ch_S"] {
     display: none;
 }
 
