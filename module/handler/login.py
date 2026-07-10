@@ -49,6 +49,31 @@ class LoginHandler(UI):
         self.device.click(start_icon)
         return True
 
+    def handle_login_event_overview(self):
+        """
+        兼容登录后自动弹出的新版“活动总览”页。
+
+        Returns:
+            bool: 是否识别并处理了活动总览页。
+
+        Notes:
+            - 新版客户端在标题页点击进入后，可能先落到“活动总览/每月签到”等运营页，
+              该页面不属于常规主界面，也不一定命中旧的 EVENT_LIST_CHECK 素材。
+            - 这里用“左上返回箭头 + 右上 Home 图标”做联合判断，只有两者同时出现时才回退，
+              以降低误把普通页面当成活动总览页的风险。
+        """
+        if not self.appear(BACK_ARROW, offset=(20, 20), interval=2):
+            return False
+
+        home_icon = self.image_color_button(
+            area=(1180, 0, 1280, 90), color=(236, 241, 248),
+            color_threshold=230, encourage=8, name='LOGIN_EVENT_HOME')
+        if home_icon is None:
+            return False
+
+        self.device.click(BACK_ARROW)
+        return True
+
     def _handle_app_login(self):
         """
         Pages:
@@ -105,6 +130,8 @@ class LoginHandler(UI):
                 continue
             if self.appear(EVENT_LIST_CHECK, offset=(30, 30), interval=5):
                 self.device.click(BACK_ARROW)
+                continue
+            if self.handle_login_event_overview():
                 continue
             # Updates and maintenance
             if self.appear_then_click(MAINTENANCE_ANNOUNCE, offset=(30, 30), interval=5):
