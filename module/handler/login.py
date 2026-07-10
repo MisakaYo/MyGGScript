@@ -19,6 +19,36 @@ from module.ui.ui import UI
 
 
 class LoginHandler(UI):
+    def handle_login_title_start(self):
+        """
+        兼容新版国服标题页的 `PRESS TO START` 入口。
+
+        Returns:
+            bool: 是否识别并处理了标题页启动入口。
+
+        Notes:
+            - 旧的 LOGIN_CHECK 主要依赖历史素材图；当标题页文案或按钮样式更新后，
+              可能会出现已经到达标题页、但始终点不到启动入口的情况。
+            - 这里用两个稳定特征做联合兜底：
+              1. 中下方深色服务器选择条
+              2. 右下角橙色启动标识
+              只有两者同时出现才执行点击，尽量避免误点到其他页面。
+        """
+        server_bar = self.image_color_button(
+            area=(430, 545, 860, 610), color=(67, 65, 83),
+            color_threshold=221, encourage=18, name='LOGIN_SERVER_BAR')
+        if server_bar is None:
+            return False
+
+        start_icon = self.image_color_button(
+            area=(1000, 510, 1088, 575), color=(235, 96, 25),
+            color_threshold=221, encourage=22, name='LOGIN_START_ICON')
+        if start_icon is None:
+            return False
+
+        self.device.click(start_icon)
+        return True
+
     def _handle_app_login(self):
         """
         Pages:
@@ -80,6 +110,10 @@ class LoginHandler(UI):
             if self.appear_then_click(MAINTENANCE_ANNOUNCE, offset=(30, 30), interval=5):
                 continue
             if self.appear_then_click(LOGIN_GAME_UPDATE, offset=(30, 30), interval=5):
+                continue
+            # 新版标题页可能不再命中历史 LOGIN_CHECK 素材，这里补一个颜色联合识别兜底，
+            # 避免已经停在 `PRESS TO START` 页面却始终不点击进入。
+            if self.handle_login_title_start():
                 continue
             if server.server == 'cn' and not login_success:
                 if self.handle_cn_user_agreement():
