@@ -77,7 +77,10 @@ class ConnectionAttr:
         To load a serial:
             serial = SerialStr.revise_serial(serial)
         """
-        serial = serial.strip().replace(' ', '')
+        # 运行时某些配置来源会在字符串前注入退格等不可见控制字符，
+        # 这会让 "auto"、"emulator-5554" 之类本应合法的串口值在后续判断中失效。
+        # 这里统一清掉 ASCII 控制字符，只保留可见内容，避免自动选设备分支被绕过。
+        serial = ''.join(ch for ch in str(serial) if ord(ch) >= 32).strip().replace(' ', '')
         # 127。0。0。1：5555
         serial = serial.replace('。', '.').replace('，', '.').replace(',', '.').replace('：', ':')
         # 127.0.0.1.5555
