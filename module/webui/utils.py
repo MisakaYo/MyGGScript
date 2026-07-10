@@ -368,13 +368,16 @@ def filepath_icon(filename):
 
 
 def add_css(filepath):
-    with open(filepath, "r") as f:
+    # WebUI 静态资源统一按 UTF-8 读取，避免在中文系统上退回到 GBK 后，
+    # 因为中文注释或多语言文本触发解码异常，导致整个页面停在加载壳层。
+    with open(filepath, "r", encoding="utf-8") as f:
         css = f.read().replace("\n", "")
         run_js(f"""$('head').append('<style>{css}</style>')""")
 
 
 def _read(path):
-    with open(path, "r") as f:
+    # 与 CSS 保持一致，统一文本读取编码，减少不同静态资源之间的编码行为分叉。
+    with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
 
