@@ -103,6 +103,32 @@ class DroidCast(Uiautomator2):
     droidcast_width: int = 0
     droidcast_height: int = 0
 
+    def _is_configured_mumu12(self) -> bool:
+        """
+        返回:
+            bool: 当前配置是否明确声明在使用 MuMuPlayer12。
+
+        说明:
+            便携包里常见的串口可能被写成 `emulator-5554`，
+            这会让原有仅靠串口判断的 MuMu12 识别失效。
+            这里额外参考用户配置里的模拟器类型，避免截图旋转逻辑被漏掉。
+        """
+        return getattr(self.config, 'EmulatorInfo_Emulator', None) == 'MuMuPlayer12'
+
+    def _should_rotate_mumu12_screenshot(self) -> bool:
+        """
+        返回:
+            bool: 当前截图结果是否需要按 MuMu12 竖屏回传的特性补一次旋转。
+
+        说明:
+            MuMu12 在部分连接方式下会以 `emulator-*` 串口出现，但 DroidCast 仍然返回
+            需要旋转处理的原始画面；如果这里只按串口判断，就会导致最终截图横着保存，
+            进而让登录页和主页模板全部识别失败。
+        """
+        if self.orientation != 1:
+            return False
+        return self.is_mumu_over_version_356 or self._is_configured_mumu12()
+
     @cached_property
     def droidcast_session(self):
         session = requests.Session()
@@ -217,9 +243,8 @@ class DroidCast(Uiautomator2):
         if image is None:
             raise ImageTruncated('Empty image after cv2.cvtColor')
 
-        if self.is_mumu_over_version_356:
-            if self.orientation == 1:
-                image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        if self._should_rotate_mumu12_screenshot():
+            image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
 
         return image
 
@@ -233,7 +258,7 @@ class DroidCast(Uiautomator2):
             if self.droidcast_height and self.droidcast_width:
                 shape = (self.droidcast_height, self.droidcast_width)
 
-        rotate = self.is_mumu_over_version_356 and self.orientation == 1
+        rotate = self._should_rotate_mumu12_screenshot()
 
         image = self.droidcast_session.get(self.droidcast_raw_url(), timeout=3).content
         # DroidCast_raw returns a RGB565 bitmap
