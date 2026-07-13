@@ -2896,20 +2896,20 @@
   },
   "PowerLimit": {
     "_info": {
-      "name": "PowerLimit._info.name",
-      "help": "PowerLimit._info.help"
+      "name": "战力阈值",
+      "help": "设置各项任务中舰队战力的上限。当检测到战力超过设定值时，认为 GG 修改仍在生效，将重启游戏以关闭修改。"
     },
     "Exercise": {
-      "name": "PowerLimit.Exercise.name",
-      "help": "PowerLimit.Exercise.help"
+      "name": "演习",
+      "help": "演习任务中的战力阈值"
     },
     "Raid": {
-      "name": "PowerLimit.Raid.name",
-      "help": "PowerLimit.Raid.help"
+      "name": "共斗/协同",
+      "help": "共斗或协同作战中的战力阈值"
     },
     "Ash": {
-      "name": "PowerLimit.Ash.name",
-      "help": "PowerLimit.Ash.help"
+      "name": "Meta(信标)",
+      "help": "Meta 信标作战中的战力阈值"
     }
   },
   "Storage": {
